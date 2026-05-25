@@ -194,7 +194,6 @@ final class Anna_Content_Manager {
 		wp_nonce_field( 'anna_content_save_page', 'anna_content_page_nonce' );
 
 		$data = $this->get_section_with_legacy_defaults( $post->ID, 'hero' );
-		$this->render_section_debug_panel( $post->ID, 'hero', $data );
 
 		$image_url = ! empty( $data['image_id'] ) ? wp_get_attachment_image_url( absint( $data['image_id'] ), 'medium' ) : '';
 		?>
@@ -280,7 +279,6 @@ final class Anna_Content_Manager {
 	 */
 	public function render_intro_meta_box( $post ) {
 		$data = $this->get_section_with_legacy_defaults( $post->ID, 'intro' );
-		$this->render_section_debug_panel( $post->ID, 'intro', $data );
 		?>
 		<table class="form-table">
 			<tr><th scope="row"><label for="anna-content-intro-eyebrow"><?php esc_html_e( 'Intro Eyebrow', 'anna-baylis' ); ?></label></th><td><input type="text" id="anna-content-intro-eyebrow" name="anna_content_intro[intro_eyebrow]" value="<?php echo esc_attr( $data['intro_eyebrow'] ); ?>" class="regular-text"></td></tr>
@@ -306,7 +304,6 @@ final class Anna_Content_Manager {
 	 */
 	public function render_services_meta_box( $post ) {
 		$data = $this->get_section_with_legacy_defaults( $post->ID, 'services' );
-		$this->render_section_debug_panel( $post->ID, 'services', $data );
 		?>
 		<table class="form-table">
 			<tr><th scope="row"><label for="anna-content-services-eyebrow"><?php esc_html_e( 'Eyebrow', 'anna-baylis' ); ?></label></th><td><input type="text" id="anna-content-services-eyebrow" name="anna_content_services[eyebrow]" value="<?php echo esc_attr( $data['eyebrow'] ); ?>" class="regular-text"></td></tr>
@@ -326,7 +323,6 @@ final class Anna_Content_Manager {
 	 */
 	public function render_about_meta_box( $post ) {
 		$data = $this->get_section_with_legacy_defaults( $post->ID, 'about' );
-		$this->render_section_debug_panel( $post->ID, 'about', $data );
 		$image_url = ! empty( $data['image_id'] ) ? wp_get_attachment_image_url( absint( $data['image_id'] ), 'medium' ) : '';
 		?>
 		<table class="form-table">
@@ -351,7 +347,6 @@ final class Anna_Content_Manager {
 	 */
 	public function render_testimonials_meta_box( $post ) {
 		$data = $this->get_section_with_legacy_defaults( $post->ID, 'testimonials' );
-		$this->render_section_debug_panel( $post->ID, 'testimonials', $data );
 		?>
 		<table class="form-table">
 			<tr><th scope="row"><label for="anna-content-testimonials-eyebrow"><?php esc_html_e( 'Eyebrow', 'anna-baylis' ); ?></label></th><td><input type="text" id="anna-content-testimonials-eyebrow" name="anna_content_testimonials[eyebrow]" value="<?php echo esc_attr( $data['eyebrow'] ); ?>" class="regular-text"></td></tr>
@@ -371,7 +366,6 @@ final class Anna_Content_Manager {
 	 */
 	public function render_cta_meta_box( $post ) {
 		$data = $this->get_section_with_legacy_defaults( $post->ID, 'cta' );
-		$this->render_section_debug_panel( $post->ID, 'cta', $data );
 		?>
 		<table class="form-table">
 			<tr><th scope="row"><label for="anna-content-cta-eyebrow"><?php esc_html_e( 'Eyebrow', 'anna-baylis' ); ?></label></th><td><input type="text" id="anna-content-cta-eyebrow" name="anna_content_cta[eyebrow]" value="<?php echo esc_attr( $data['eyebrow'] ); ?>" class="regular-text"></td></tr>
@@ -696,63 +690,6 @@ final class Anna_Content_Manager {
 		return false;
 	}
 
-	/**
-	 * Render a temporary admin debug panel for section resolution.
-	 *
-	 * @param int    $post_id  Post ID.
-	 * @param string $section  Section key.
-	 * @param array  $resolved Final resolved section data.
-	 * @return void
-	 */
-	private function render_section_debug_panel( $post_id, $section, $resolved ) {
-		if ( ! current_user_can( 'manage_options' ) ) {
-			return;
-		}
-
-		$stored = $this->get_page_section( $post_id, $section );
-		$legacy = $this->get_legacy_section_defaults( $section );
-
-		$debug = array(
-			'post_id'            => (int) $post_id,
-			'front_page_id'      => (int) get_option( 'page_on_front' ),
-			'section'            => $section,
-			'theme_defaults_fn'  => function_exists( 'anna_get_default_options' ) ? 'yes' : 'no',
-			'stored_non_empty'   => $this->count_non_empty_values( $stored ),
-			'legacy_non_empty'   => $this->count_non_empty_values( $legacy ),
-			'resolved_non_empty' => $this->count_non_empty_values( $resolved ),
-			'stored'             => $stored,
-			'legacy'             => $legacy,
-			'resolved'           => $resolved,
-		);
-		?>
-		<details style="margin:0 0 16px;padding:10px 12px;border:1px solid #dcdcde;border-radius:8px;background:#fffbe6;">
-			<summary style="cursor:pointer;font-weight:600;"><?php esc_html_e( 'Debug section data', 'anna-baylis' ); ?></summary>
-			<pre style="margin:12px 0 0;white-space:pre-wrap;"><?php echo esc_html( wp_json_encode( $debug, JSON_PRETTY_PRINT ) ); ?></pre>
-		</details>
-		<?php
-	}
-
-	/**
-	 * Count non-empty values in a section array.
-	 *
-	 * @param array $data Section data.
-	 * @return int
-	 */
-	private function count_non_empty_values( $data ) {
-		if ( ! is_array( $data ) ) {
-			return 0;
-		}
-
-		$count = 0;
-
-		foreach ( $data as $key => $value ) {
-			if ( ! $this->is_blank_section_value( $value, (string) $key ) ) {
-				$count++;
-			}
-		}
-
-		return $count;
-	}
 }
 
 /**
