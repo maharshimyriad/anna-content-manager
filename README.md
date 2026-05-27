@@ -4,6 +4,7 @@ Classic-editor content management for Anna Baylis page sections.
 
 ## Current scope
 
+- Fixed About page content fields
 - Home Hero
 - Home Intro / Recognition
 - Home Services section copy
@@ -13,6 +14,9 @@ Classic-editor content management for Anna Baylis page sections.
 
 The theme still controls layout, markup, and styling.
 The plugin controls editable content.
+
+Homepage section boxes only appear on the page assigned as the WordPress front page.
+The fixed About page box appears on the `about` page or pages using the `About Page` template.
 
 ## How to edit homepage content
 

@@ -144,7 +144,26 @@ final class Anna_Content_Manager {
 	/**
 	 * Register page-level content meta boxes.
 	 */
-	public function register_meta_boxes() {
+	public function register_meta_boxes( $post = null ) {
+		$is_page       = $post instanceof WP_Post;
+		$is_front_page = $is_page && (int) get_option( 'page_on_front' ) === (int) $post->ID;
+		$is_about_page = $is_page && ( 'about' === $post->post_name || 'page-about.php' === get_page_template_slug( $post->ID ) );
+
+		if ( $is_about_page ) {
+			add_meta_box(
+				'anna_content_about_page',
+				__( 'Anna About Page Content', 'anna-baylis' ),
+				array( $this, 'render_about_page_meta_box' ),
+				'page',
+				'normal',
+				'high'
+			);
+		}
+
+		if ( ! $is_front_page ) {
+			return;
+		}
+
 		add_meta_box(
 			'anna_content_hero',
 			__( 'Anna Hero Section Content', 'anna-baylis' ),
@@ -273,6 +292,76 @@ final class Anna_Content_Manager {
 	}
 
 	/**
+	 * Render fixed About page content fields.
+	 *
+	 * @param WP_Post $post Post object.
+	 */
+	public function render_about_page_meta_box( $post ) {
+		wp_nonce_field( 'anna_content_save_page', 'anna_content_page_nonce' );
+
+		$data = $this->get_about_page_content_with_defaults( $post->ID );
+		?>
+		<p><?php esc_html_e( 'These fields feed the fixed About page design. Admins can edit copy and images only; the section layout stays in the theme.', 'anna-baylis' ); ?></p>
+
+		<h3><?php esc_html_e( 'Hero', 'anna-baylis' ); ?></h3>
+		<table class="form-table">
+			<?php $this->render_text_field( 'anna_content_about_page', 'hero_eyebrow', __( 'Eyebrow', 'anna-baylis' ), $data['hero_eyebrow'] ); ?>
+			<?php $this->render_textarea_field( 'anna_content_about_page', 'hero_heading', __( 'Heading', 'anna-baylis' ), $data['hero_heading'], 2 ); ?>
+			<?php $this->render_textarea_field( 'anna_content_about_page', 'hero_subheading', __( 'Subheading', 'anna-baylis' ), $data['hero_subheading'], 2 ); ?>
+			<?php $this->render_textarea_field( 'anna_content_about_page', 'hero_description', __( 'Description', 'anna-baylis' ), $data['hero_description'], 3 ); ?>
+			<?php $this->render_media_field( 'anna_content_about_page', 'hero_image_id', __( 'Hero Background Image', 'anna-baylis' ), $data['hero_image_id'] ); ?>
+		</table>
+
+		<h3><?php esc_html_e( 'Story Beginning', 'anna-baylis' ); ?></h3>
+		<table class="form-table">
+			<?php $this->render_media_field( 'anna_content_about_page', 'story_image_id', __( 'Portrait Image', 'anna-baylis' ), $data['story_image_id'] ); ?>
+			<?php $this->render_text_field( 'anna_content_about_page', 'story_eyebrow', __( 'Eyebrow', 'anna-baylis' ), $data['story_eyebrow'] ); ?>
+			<?php $this->render_textarea_field( 'anna_content_about_page', 'story_heading', __( 'Heading', 'anna-baylis' ), $data['story_heading'], 2 ); ?>
+			<?php $this->render_editor_field( 'anna_content_about_page', 'story_body', __( 'Body', 'anna-baylis' ), $data['story_body'], $post->ID ); ?>
+		</table>
+
+		<h3><?php esc_html_e( 'My Rock Bottom', 'anna-baylis' ); ?></h3>
+		<table class="form-table">
+			<?php $this->render_text_field( 'anna_content_about_page', 'rock_heading', __( 'Heading', 'anna-baylis' ), $data['rock_heading'] ); ?>
+			<?php $this->render_editor_field( 'anna_content_about_page', 'rock_left_body', __( 'Left Column', 'anna-baylis' ), $data['rock_left_body'], $post->ID ); ?>
+			<?php $this->render_editor_field( 'anna_content_about_page', 'rock_right_body', __( 'Right Column', 'anna-baylis' ), $data['rock_right_body'], $post->ID ); ?>
+		</table>
+
+		<h3><?php esc_html_e( 'How I Became a Coach', 'anna-baylis' ); ?></h3>
+		<table class="form-table">
+			<?php $this->render_textarea_field( 'anna_content_about_page', 'coach_heading', __( 'Heading', 'anna-baylis' ), $data['coach_heading'], 2 ); ?>
+			<?php $this->render_editor_field( 'anna_content_about_page', 'coach_left_body', __( 'Left Column', 'anna-baylis' ), $data['coach_left_body'], $post->ID ); ?>
+			<?php $this->render_editor_field( 'anna_content_about_page', 'coach_right_body', __( 'Right Column', 'anna-baylis' ), $data['coach_right_body'], $post->ID ); ?>
+			<?php $this->render_text_field( 'anna_content_about_page', 'coach_quote', __( 'Quote', 'anna-baylis' ), $data['coach_quote'] ); ?>
+		</table>
+
+		<h3><?php esc_html_e( 'Approach', 'anna-baylis' ); ?></h3>
+		<table class="form-table">
+			<?php $this->render_text_field( 'anna_content_about_page', 'approach_eyebrow', __( 'Eyebrow', 'anna-baylis' ), $data['approach_eyebrow'] ); ?>
+			<?php $this->render_textarea_field( 'anna_content_about_page', 'approach_heading', __( 'Heading', 'anna-baylis' ), $data['approach_heading'], 2 ); ?>
+			<?php $this->render_textarea_field( 'anna_content_about_page', 'approach_intro', __( 'Intro', 'anna-baylis' ), $data['approach_intro'], 2 ); ?>
+			<?php $this->render_editor_field( 'anna_content_about_page', 'approach_left_body', __( 'Left Column', 'anna-baylis' ), $data['approach_left_body'], $post->ID ); ?>
+			<?php $this->render_editor_field( 'anna_content_about_page', 'approach_right_body', __( 'Right Column', 'anna-baylis' ), $data['approach_right_body'], $post->ID ); ?>
+		</table>
+
+		<h3><?php esc_html_e( 'Qualifications', 'anna-baylis' ); ?></h3>
+		<table class="form-table">
+			<?php $this->render_text_field( 'anna_content_about_page', 'qual_heading', __( 'Heading', 'anna-baylis' ), $data['qual_heading'] ); ?>
+			<?php $this->render_textarea_field( 'anna_content_about_page', 'qual_intro', __( 'Intro', 'anna-baylis' ), $data['qual_intro'], 2 ); ?>
+			<?php $this->render_textarea_field( 'anna_content_about_page', 'qual_items', __( 'Qualification Items', 'anna-baylis' ), is_array( $data['qual_items'] ) ? implode( "\n", $data['qual_items'] ) : $data['qual_items'], 8, __( 'One qualification per line.', 'anna-baylis' ) ); ?>
+		</table>
+
+		<h3><?php esc_html_e( 'My Life Now', 'anna-baylis' ); ?></h3>
+		<table class="form-table">
+			<?php $this->render_media_field( 'anna_content_about_page', 'life_image_id', __( 'Image', 'anna-baylis' ), $data['life_image_id'] ); ?>
+			<?php $this->render_text_field( 'anna_content_about_page', 'life_eyebrow', __( 'Eyebrow', 'anna-baylis' ), $data['life_eyebrow'] ); ?>
+			<?php $this->render_text_field( 'anna_content_about_page', 'life_heading', __( 'Heading', 'anna-baylis' ), $data['life_heading'] ); ?>
+			<?php $this->render_editor_field( 'anna_content_about_page', 'life_body', __( 'Body', 'anna-baylis' ), $data['life_body'], $post->ID ); ?>
+		</table>
+		<?php
+	}
+
+	/**
 	 * Render intro/recognition meta box.
 	 *
 	 * @param WP_Post $post Post object.
@@ -387,6 +476,109 @@ final class Anna_Content_Manager {
 	}
 
 	/**
+	 * Render a text input row.
+	 *
+	 * @param string $group Field group.
+	 * @param string $key Field key.
+	 * @param string $label Field label.
+	 * @param string $value Field value.
+	 */
+	private function render_text_field( $group, $key, $label, $value ) {
+		$id = sanitize_key( $group . '_' . $key );
+		?>
+		<tr>
+			<th scope="row"><label for="<?php echo esc_attr( $id ); ?>"><?php echo esc_html( $label ); ?></label></th>
+			<td><input type="text" id="<?php echo esc_attr( $id ); ?>" name="<?php echo esc_attr( $group ); ?>[<?php echo esc_attr( $key ); ?>]" value="<?php echo esc_attr( $value ); ?>" class="large-text"></td>
+		</tr>
+		<?php
+	}
+
+	/**
+	 * Render a textarea row.
+	 *
+	 * @param string $group Field group.
+	 * @param string $key Field key.
+	 * @param string $label Field label.
+	 * @param string $value Field value.
+	 * @param int    $rows Textarea rows.
+	 * @param string $description Optional description.
+	 */
+	private function render_textarea_field( $group, $key, $label, $value, $rows = 4, $description = '' ) {
+		$id = sanitize_key( $group . '_' . $key );
+		?>
+		<tr>
+			<th scope="row"><label for="<?php echo esc_attr( $id ); ?>"><?php echo esc_html( $label ); ?></label></th>
+			<td>
+				<textarea id="<?php echo esc_attr( $id ); ?>" name="<?php echo esc_attr( $group ); ?>[<?php echo esc_attr( $key ); ?>]" rows="<?php echo esc_attr( $rows ); ?>" class="large-text"><?php echo esc_textarea( $value ); ?></textarea>
+				<?php if ( $description ) : ?>
+					<p class="description"><?php echo esc_html( $description ); ?></p>
+				<?php endif; ?>
+			</td>
+		</tr>
+		<?php
+	}
+
+	/**
+	 * Render an editor row.
+	 *
+	 * @param string $group Field group.
+	 * @param string $key Field key.
+	 * @param string $label Field label.
+	 * @param string $value Field value.
+	 * @param int    $post_id Post ID for unique editor IDs.
+	 */
+	private function render_editor_field( $group, $key, $label, $value, $post_id ) {
+		$id = sanitize_key( $group . '_' . $key . '_' . $post_id );
+		?>
+		<tr>
+			<th scope="row"><label for="<?php echo esc_attr( $id ); ?>"><?php echo esc_html( $label ); ?></label></th>
+			<td>
+				<?php
+				wp_editor(
+					$value,
+					$id,
+					array(
+						'textarea_name' => $group . '[' . $key . ']',
+						'textarea_rows' => 6,
+						'media_buttons' => false,
+					)
+				);
+				?>
+			</td>
+		</tr>
+		<?php
+	}
+
+	/**
+	 * Render a media selector row.
+	 *
+	 * @param string $group Field group.
+	 * @param string $key Field key.
+	 * @param string $label Field label.
+	 * @param int    $value Attachment ID.
+	 */
+	private function render_media_field( $group, $key, $label, $value ) {
+		$id        = sanitize_key( $group . '_' . $key );
+		$preview   = $id . '_preview';
+		$image_url = $value ? wp_get_attachment_image_url( absint( $value ), 'medium' ) : '';
+		?>
+		<tr>
+			<th scope="row"><?php echo esc_html( $label ); ?></th>
+			<td>
+				<input type="hidden" id="<?php echo esc_attr( $id ); ?>" name="<?php echo esc_attr( $group ); ?>[<?php echo esc_attr( $key ); ?>]" value="<?php echo esc_attr( $value ); ?>">
+				<div id="<?php echo esc_attr( $preview ); ?>" style="margin-bottom:10px;">
+					<?php if ( $image_url ) : ?>
+						<img src="<?php echo esc_url( $image_url ); ?>" alt="" style="max-width:220px;height:auto;border-radius:10px;">
+					<?php endif; ?>
+				</div>
+				<button type="button" class="button anna-content-media-select" data-target="<?php echo esc_attr( $id ); ?>" data-preview="<?php echo esc_attr( $preview ); ?>"><?php esc_html_e( 'Select Image', 'anna-baylis' ); ?></button>
+				<button type="button" class="button anna-content-media-remove" data-target="<?php echo esc_attr( $id ); ?>" data-preview="<?php echo esc_attr( $preview ); ?>"><?php esc_html_e( 'Remove', 'anna-baylis' ); ?></button>
+			</td>
+		</tr>
+		<?php
+	}
+
+	/**
 	 * Save page content meta.
 	 *
 	 * @param int $post_id Current post ID.
@@ -402,6 +594,11 @@ final class Anna_Content_Manager {
 
 		if ( ! current_user_can( 'edit_post', $post_id ) ) {
 			return;
+		}
+
+		if ( isset( $_POST['anna_content_about_page'] ) && is_array( $_POST['anna_content_about_page'] ) ) {
+			$input = wp_unslash( $_POST['anna_content_about_page'] );
+			update_post_meta( $post_id, '_anna_content_about_page', $this->sanitize_about_page_content( $input ) );
 		}
 
 		if ( isset( $_POST['anna_content_hero'] ) && is_array( $_POST['anna_content_hero'] ) ) {
@@ -508,6 +705,143 @@ final class Anna_Content_Manager {
 				)
 			);
 		}
+	}
+
+	/**
+	 * Get fixed About page content.
+	 *
+	 * @param int $post_id Post ID.
+	 * @return array
+	 */
+	public function get_about_page_content( $post_id ) {
+		return $this->get_about_page_content_with_defaults( $post_id );
+	}
+
+	/**
+	 * Get fixed About page content with defaults.
+	 *
+	 * @param int $post_id Post ID.
+	 * @return array
+	 */
+	private function get_about_page_content_with_defaults( $post_id ) {
+		$stored = get_post_meta( absint( $post_id ), '_anna_content_about_page', true );
+		$stored = is_array( $stored ) ? $stored : array();
+
+		return wp_parse_args( $stored, $this->get_about_page_defaults() );
+	}
+
+	/**
+	 * Sanitize fixed About page content.
+	 *
+	 * @param array $input Raw input.
+	 * @return array
+	 */
+	private function sanitize_about_page_content( $input ) {
+		$text_fields = array(
+			'hero_eyebrow',
+			'hero_description',
+			'story_eyebrow',
+			'rock_heading',
+			'coach_quote',
+			'approach_eyebrow',
+			'approach_intro',
+			'qual_heading',
+			'qual_intro',
+			'life_eyebrow',
+			'life_heading',
+		);
+
+		$textarea_fields = array(
+			'hero_heading',
+			'hero_subheading',
+			'story_heading',
+			'coach_heading',
+			'approach_heading',
+			'qual_items',
+		);
+
+		$html_fields = array(
+			'story_body',
+			'rock_left_body',
+			'rock_right_body',
+			'coach_left_body',
+			'coach_right_body',
+			'approach_left_body',
+			'approach_right_body',
+			'life_body',
+		);
+
+		$image_fields = array(
+			'hero_image_id',
+			'story_image_id',
+			'life_image_id',
+		);
+
+		$data = array();
+
+		foreach ( $text_fields as $field ) {
+			$data[ $field ] = sanitize_text_field( $input[ $field ] ?? '' );
+		}
+
+		foreach ( $textarea_fields as $field ) {
+			$data[ $field ] = sanitize_textarea_field( $input[ $field ] ?? '' );
+		}
+
+		foreach ( $html_fields as $field ) {
+			$data[ $field ] = wp_kses_post( $input[ $field ] ?? '' );
+		}
+
+		foreach ( $image_fields as $field ) {
+			$data[ $field ] = absint( $input[ $field ] ?? 0 );
+		}
+
+		if ( ! empty( $data['qual_items'] ) ) {
+			$items = preg_split( '/\r\n|\r|\n/', $data['qual_items'] );
+			$items = array_values( array_filter( array_map( 'trim', $items ) ) );
+			$data['qual_items'] = $items;
+		} else {
+			$data['qual_items'] = array();
+		}
+
+		return wp_parse_args( $data, $this->get_about_page_defaults() );
+	}
+
+	/**
+	 * Default fixed About page content.
+	 *
+	 * @return array
+	 */
+	private function get_about_page_defaults() {
+		return array(
+			'hero_eyebrow'       => __( 'About Anna', 'anna-baylis' ),
+			'hero_heading'       => __( "I'm Anna.", 'anna-baylis' ),
+			'hero_subheading'    => __( 'Life Coach. Motivational Speaker. Olympian.', 'anna-baylis' ),
+			'hero_description'   => __( 'And I became the coach I am because of what I have lived through, not in spite of it.', 'anna-baylis' ),
+			'hero_image_id'      => 0,
+			'story_eyebrow'      => __( 'About Anna', 'anna-baylis' ),
+			'story_heading'      => __( 'My story the beginning', 'anna-baylis' ),
+			'story_body'         => '',
+			'story_image_id'     => 0,
+			'rock_heading'       => __( 'My rock bottom', 'anna-baylis' ),
+			'rock_left_body'     => '',
+			'rock_right_body'    => '',
+			'coach_heading'      => __( 'How I became a coach', 'anna-baylis' ),
+			'coach_left_body'    => '',
+			'coach_right_body'   => '',
+			'coach_quote'        => __( "That's not theory. That's my life.", 'anna-baylis' ),
+			'approach_eyebrow'   => __( 'My Approach', 'anna-baylis' ),
+			'approach_heading'   => __( 'Different to most talk therapies', 'anna-baylis' ),
+			'approach_intro'     => '',
+			'approach_left_body' => '',
+			'approach_right_body'=> '',
+			'qual_heading'       => __( 'My qualifications', 'anna-baylis' ),
+			'qual_intro'         => __( 'I am committed to ongoing learning and hold qualifications in:', 'anna-baylis' ),
+			'qual_items'         => array(),
+			'life_eyebrow'       => __( 'Present Day', 'anna-baylis' ),
+			'life_heading'       => __( 'My life now', 'anna-baylis' ),
+			'life_body'          => '',
+			'life_image_id'      => 0,
+		);
 	}
 
 	/**
@@ -701,4 +1035,14 @@ final class Anna_Content_Manager {
  */
 function anna_content_get_page_section( $post_id, $section ) {
 	return Anna_Content_Manager::instance()->get_page_section( $post_id, $section );
+}
+
+/**
+ * Public helper for the fixed About page template.
+ *
+ * @param int $post_id Post ID.
+ * @return array
+ */
+function anna_content_get_about_page_content( $post_id ) {
+	return Anna_Content_Manager::instance()->get_about_page_content( $post_id );
 }
