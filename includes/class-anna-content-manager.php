@@ -307,8 +307,9 @@ final class Anna_Content_Manager {
 		<table class="form-table">
 			<?php $this->render_text_field( 'anna_content_about_page', 'hero_eyebrow', __( 'Eyebrow', 'anna-baylis' ), $data['hero_eyebrow'] ); ?>
 			<?php $this->render_textarea_field( 'anna_content_about_page', 'hero_heading', __( 'Heading', 'anna-baylis' ), $data['hero_heading'], 2 ); ?>
-			<?php $this->render_textarea_field( 'anna_content_about_page', 'hero_subheading', __( 'Subheading', 'anna-baylis' ), $data['hero_subheading'], 2 ); ?>
-			<?php $this->render_textarea_field( 'anna_content_about_page', 'hero_description', __( 'Description', 'anna-baylis' ), $data['hero_description'], 3 ); ?>
+			<?php $this->render_textarea_field( 'anna_content_about_page', 'hero_subheading', __( 'Subheading (optional)', 'anna-baylis' ), $data['hero_subheading'], 2 ); ?>
+			<?php $this->render_textarea_field( 'anna_content_about_page', 'hero_description', __( 'Description (optional)', 'anna-baylis' ), $data['hero_description'], 3 ); ?>
+			<?php $this->render_textarea_field( 'anna_content_about_page', 'hero_tags', __( 'Hero Tags', 'anna-baylis' ), is_array( $data['hero_tags'] ) ? implode( "\n", $data['hero_tags'] ) : $data['hero_tags'], 6, __( 'One tag per line.', 'anna-baylis' ) ); ?>
 			<?php $this->render_media_field( 'anna_content_about_page', 'hero_image_id', __( 'Hero Background Image', 'anna-baylis' ), $data['hero_image_id'] ); ?>
 		</table>
 
@@ -329,26 +330,35 @@ final class Anna_Content_Manager {
 
 		<h3><?php esc_html_e( 'How I Became a Coach', 'anna-baylis' ); ?></h3>
 		<table class="form-table">
-			<?php $this->render_textarea_field( 'anna_content_about_page', 'coach_heading', __( 'Heading', 'anna-baylis' ), $data['coach_heading'], 2 ); ?>
-			<?php $this->render_editor_field( 'anna_content_about_page', 'coach_left_body', __( 'Left Column', 'anna-baylis' ), $data['coach_left_body'], $post->ID ); ?>
-			<?php $this->render_editor_field( 'anna_content_about_page', 'coach_right_body', __( 'Right Column', 'anna-baylis' ), $data['coach_right_body'], $post->ID ); ?>
-			<?php $this->render_text_field( 'anna_content_about_page', 'coach_quote', __( 'Quote', 'anna-baylis' ), $data['coach_quote'] ); ?>
+			<?php $this->render_text_field( 'anna_content_about_page', 'coach_eyebrow', __( 'Eyebrow', 'anna-baylis' ), $data['coach_eyebrow'] ); ?>
+			<?php $this->render_text_field( 'anna_content_about_page', 'coach_title', __( 'Heading', 'anna-baylis' ), $data['coach_title'] ); ?>
+			<?php $this->render_editor_field( 'anna_content_about_page', 'coach_body', __( 'Body', 'anna-baylis' ), $data['coach_body'], $post->ID ); ?>
+			<?php $this->render_text_field( 'anna_content_about_page', 'coach_button_text', __( 'Button Text', 'anna-baylis' ), $data['coach_button_text'] ); ?>
+			<?php $this->render_text_field( 'anna_content_about_page', 'coach_button_url', __( 'Button URL', 'anna-baylis' ), $data['coach_button_url'] ); ?>
+			<?php $this->render_media_field( 'anna_content_about_page', 'coach_image_id', __( 'Right Image', 'anna-baylis' ), $data['coach_image_id'] ); ?>
 		</table>
 
-		<h3><?php esc_html_e( 'Approach', 'anna-baylis' ); ?></h3>
+		<h3><?php esc_html_e( 'How I Work', 'anna-baylis' ); ?></h3>
 		<table class="form-table">
-			<?php $this->render_text_field( 'anna_content_about_page', 'approach_eyebrow', __( 'Eyebrow', 'anna-baylis' ), $data['approach_eyebrow'] ); ?>
-			<?php $this->render_textarea_field( 'anna_content_about_page', 'approach_heading', __( 'Heading', 'anna-baylis' ), $data['approach_heading'], 2 ); ?>
-			<?php $this->render_textarea_field( 'anna_content_about_page', 'approach_intro', __( 'Intro', 'anna-baylis' ), $data['approach_intro'], 2 ); ?>
-			<?php $this->render_editor_field( 'anna_content_about_page', 'approach_left_body', __( 'Left Column', 'anna-baylis' ), $data['approach_left_body'], $post->ID ); ?>
-			<?php $this->render_editor_field( 'anna_content_about_page', 'approach_right_body', __( 'Right Column', 'anna-baylis' ), $data['approach_right_body'], $post->ID ); ?>
+			<?php $this->render_text_field( 'anna_content_about_page', 'work_eyebrow', __( 'Eyebrow', 'anna-baylis' ), $data['work_eyebrow'] ); ?>
+			<?php $this->render_textarea_field( 'anna_content_about_page', 'work_heading', __( 'Heading', 'anna-baylis' ), $data['work_heading'], 2 ); ?>
+			<?php $this->render_editor_field( 'anna_content_about_page', 'work_body', __( 'Left Column Copy', 'anna-baylis' ), $data['work_body'], $post->ID ); ?>
+			<?php $this->render_text_field( 'anna_content_about_page', 'work_card_1_title', __( 'Card 1 Title', 'anna-baylis' ), $data['work_card_1_title'] ); ?>
+			<?php $this->render_textarea_field( 'anna_content_about_page', 'work_card_1_body', __( 'Card 1 Body', 'anna-baylis' ), $data['work_card_1_body'], 3 ); ?>
+			<?php $this->render_text_field( 'anna_content_about_page', 'work_card_2_title', __( 'Card 2 Title', 'anna-baylis' ), $data['work_card_2_title'] ); ?>
+			<?php $this->render_textarea_field( 'anna_content_about_page', 'work_card_2_body', __( 'Card 2 Body', 'anna-baylis' ), $data['work_card_2_body'], 3 ); ?>
+			<?php $this->render_text_field( 'anna_content_about_page', 'work_card_3_title', __( 'Card 3 Title', 'anna-baylis' ), $data['work_card_3_title'] ); ?>
+			<?php $this->render_textarea_field( 'anna_content_about_page', 'work_card_3_body', __( 'Card 3 Body', 'anna-baylis' ), $data['work_card_3_body'], 3 ); ?>
+			<?php $this->render_text_field( 'anna_content_about_page', 'work_card_4_title', __( 'Card 4 Title', 'anna-baylis' ), $data['work_card_4_title'] ); ?>
+			<?php $this->render_textarea_field( 'anna_content_about_page', 'work_card_4_body', __( 'Card 4 Body', 'anna-baylis' ), $data['work_card_4_body'], 3 ); ?>
 		</table>
 
-		<h3><?php esc_html_e( 'Qualifications', 'anna-baylis' ); ?></h3>
+		<h3><?php esc_html_e( 'What People Say', 'anna-baylis' ); ?></h3>
 		<table class="form-table">
-			<?php $this->render_text_field( 'anna_content_about_page', 'qual_heading', __( 'Heading', 'anna-baylis' ), $data['qual_heading'] ); ?>
-			<?php $this->render_textarea_field( 'anna_content_about_page', 'qual_intro', __( 'Intro', 'anna-baylis' ), $data['qual_intro'], 2 ); ?>
-			<?php $this->render_textarea_field( 'anna_content_about_page', 'qual_items', __( 'Qualification Items', 'anna-baylis' ), is_array( $data['qual_items'] ) ? implode( "\n", $data['qual_items'] ) : $data['qual_items'], 8, __( 'One qualification per line.', 'anna-baylis' ) ); ?>
+			<?php $this->render_text_field( 'anna_content_about_page', 'people_eyebrow', __( 'Eyebrow', 'anna-baylis' ), $data['people_eyebrow'] ); ?>
+			<?php $this->render_text_field( 'anna_content_about_page', 'people_heading', __( 'Heading', 'anna-baylis' ), $data['people_heading'] ); ?>
+			<?php $this->render_textarea_field( 'anna_content_about_page', 'people_body', __( 'Intro', 'anna-baylis' ), $data['people_body'], 3 ); ?>
+			<?php $this->render_textarea_field( 'anna_content_about_page', 'people_items', __( 'Items', 'anna-baylis' ), is_array( $data['people_items'] ) ? implode( "\n", $data['people_items'] ) : $data['people_items'], 10, __( 'One item per line: INITIALS|TITLE|ORG', 'anna-baylis' ) ); ?>
 		</table>
 
 		<h3><?php esc_html_e( 'My Life Now', 'anna-baylis' ); ?></h3>
@@ -742,11 +752,19 @@ final class Anna_Content_Manager {
 			'hero_description',
 			'story_eyebrow',
 			'rock_heading',
-			'coach_quote',
-			'approach_eyebrow',
-			'approach_intro',
-			'qual_heading',
-			'qual_intro',
+			'coach_eyebrow',
+			'coach_title',
+			'coach_button_text',
+			'coach_button_url',
+			'work_eyebrow',
+			'work_heading',
+			'work_card_1_title',
+			'work_card_2_title',
+			'work_card_3_title',
+			'work_card_4_title',
+			'people_eyebrow',
+			'people_heading',
+			'people_body',
 			'life_eyebrow',
 			'life_heading',
 		);
@@ -755,25 +773,27 @@ final class Anna_Content_Manager {
 			'hero_heading',
 			'hero_subheading',
 			'story_heading',
-			'coach_heading',
-			'approach_heading',
-			'qual_items',
+			'hero_tags',
+			'work_card_1_body',
+			'work_card_2_body',
+			'work_card_3_body',
+			'work_card_4_body',
+			'people_items',
 		);
 
 		$html_fields = array(
 			'story_body',
 			'rock_left_body',
 			'rock_right_body',
-			'coach_left_body',
-			'coach_right_body',
-			'approach_left_body',
-			'approach_right_body',
+			'coach_body',
+			'work_body',
 			'life_body',
 		);
 
 		$image_fields = array(
 			'hero_image_id',
 			'story_image_id',
+			'coach_image_id',
 			'life_image_id',
 		);
 
@@ -795,12 +815,18 @@ final class Anna_Content_Manager {
 			$data[ $field ] = absint( $input[ $field ] ?? 0 );
 		}
 
-		if ( ! empty( $data['qual_items'] ) ) {
-			$items = preg_split( '/\r\n|\r|\n/', $data['qual_items'] );
-			$items = array_values( array_filter( array_map( 'trim', $items ) ) );
-			$data['qual_items'] = $items;
+		if ( ! empty( $data['hero_tags'] ) ) {
+			$tags = preg_split( '/\r\n|\r|\n/', $data['hero_tags'] );
+			$data['hero_tags'] = array_values( array_filter( array_map( 'trim', $tags ) ) );
 		} else {
-			$data['qual_items'] = array();
+			$data['hero_tags'] = array();
+		}
+
+		if ( ! empty( $data['people_items'] ) ) {
+			$items = preg_split( '/\r\n|\r|\n/', $data['people_items'] );
+			$data['people_items'] = array_values( array_filter( array_map( 'trim', $items ) ) );
+		} else {
+			$data['people_items'] = array();
 		}
 
 		return wp_parse_args( $data, $this->get_about_page_defaults() );
@@ -814,9 +840,10 @@ final class Anna_Content_Manager {
 	private function get_about_page_defaults() {
 		return array(
 			'hero_eyebrow'       => __( 'About Anna', 'anna-baylis' ),
-			'hero_heading'       => __( "I'm Anna.", 'anna-baylis' ),
-			'hero_subheading'    => __( 'Life Coach. Motivational Speaker. Olympian.', 'anna-baylis' ),
-			'hero_description'   => __( 'And I became the coach I am because of what I have lived through, not in spite of it.', 'anna-baylis' ),
+			'hero_heading'       => __( "Hi, I'm Anna.\nI became the coach\nI am because of\nwhat I've lived through.", 'anna-baylis' ),
+			'hero_subheading'    => '',
+			'hero_description'   => '',
+			'hero_tags'          => array( 'Olympian', 'Hawaii Ironman', 'IFS Trained', 'Somatic Psychology', 'Trauma-Informed' ),
 			'hero_image_id'      => 0,
 			'story_eyebrow'      => __( 'About Anna', 'anna-baylis' ),
 			'story_heading'      => __( 'My story the beginning', 'anna-baylis' ),
@@ -825,18 +852,40 @@ final class Anna_Content_Manager {
 			'rock_heading'       => __( 'My rock bottom', 'anna-baylis' ),
 			'rock_left_body'     => '',
 			'rock_right_body'    => '',
-			'coach_heading'      => __( 'How I became a coach', 'anna-baylis' ),
-			'coach_left_body'    => '',
-			'coach_right_body'   => '',
-			'coach_quote'        => __( "That's not theory. That's my life.", 'anna-baylis' ),
-			'approach_eyebrow'   => __( 'My Approach', 'anna-baylis' ),
-			'approach_heading'   => __( 'Different to most talk therapies', 'anna-baylis' ),
-			'approach_intro'     => '',
-			'approach_left_body' => '',
-			'approach_right_body'=> '',
-			'qual_heading'       => __( 'My qualifications', 'anna-baylis' ),
-			'qual_intro'         => __( 'I am committed to ongoing learning and hold qualifications in:', 'anna-baylis' ),
-			'qual_items'         => array(),
+			'coach_eyebrow'      => __( 'How I Became a Coach', 'anna-baylis' ),
+			'coach_title'        => __( 'A defining moment that changed everything.', 'anna-baylis' ),
+			'coach_body'         => '',
+			'coach_button_text'  => __( 'Book a Discovery Call', 'anna-baylis' ),
+			'coach_button_url'   => '#contact',
+			'coach_image_id'     => 0,
+			'work_eyebrow'       => __( 'How I work', 'anna-baylis' ),
+			'work_heading'       => __( 'Different to most talk therapies.', 'anna-baylis' ),
+			'work_body'          => '',
+			'work_card_1_title'  => __( 'Bottom-up approach', 'anna-baylis' ),
+			'work_card_1_body'   => '',
+			'work_card_2_title'  => __( 'Trauma-informed and safe', 'anna-baylis' ),
+			'work_card_2_body'   => '',
+			'work_card_3_title'  => __( 'Whole person body, mind and emotions', 'anna-baylis' ),
+			'work_card_3_body'   => '',
+			'work_card_4_title'  => __( 'Lived experience', 'anna-baylis' ),
+			'work_card_4_body'   => '',
+			'people_eyebrow'     => __( 'What people say', 'anna-baylis' ),
+			'people_heading'     => __( 'Committed to continual learning.', 'anna-baylis' ),
+			'people_body'        => __( 'Over a decade of rigorous study across human movement, nutrition, coaching, somatic psychology, trauma-informed practice and inner world work. This is what I bring to every session.', 'anna-baylis' ),
+			'people_items'       => array(
+				'HM|Bachelor of Applied Science — Human Movement|Deakin University',
+				'CP|Credentialled Practitioner of Coaching|The Coaching Institute',
+				'NLP|NLP Practitioner and Master Practitioner|Institute of Empowered Psychology',
+				'HY|Hypnotherapy|Institute of Empowered Psychology',
+				'IFS|Parts work — Internal Family Systems informed|Embodied Philosophy Western School',
+				'CI|Masters — currently completing|Gabor Maté',
+				'CT|102 five-star Google reviews|Anodea Judith',
+				'NR|Honours — Food Science and Nutrition|Deakin University',
+				'EI|Emotional Intimacy Coach|The Coaching Institute',
+				'TL|Timeline Therapy|Institute of Empowered Psychology',
+				'TC|Trauma-informed coaching|The Centre for Healing',
+				'SP|Personal trainer — 7+ years|NeuroAffective Touch Institute',
+			),
 			'life_eyebrow'       => __( 'Present Day', 'anna-baylis' ),
 			'life_heading'       => __( 'My life now', 'anna-baylis' ),
 			'life_body'          => '',
