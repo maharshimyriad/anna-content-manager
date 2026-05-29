@@ -195,6 +195,12 @@ final class Anna_Content_Manager {
 		}
 
 		wp_enqueue_media();
+		wp_enqueue_style(
+			'anna-content-manager-admin',
+			ANNA_CONTENT_MANAGER_URL . 'assets/css/admin-page-content.css',
+			array(),
+			ANNA_CONTENT_MANAGER_VERSION
+		);
 		wp_enqueue_script(
 			'anna-content-manager-admin',
 			ANNA_CONTENT_MANAGER_URL . 'assets/js/admin-page-content.js',
@@ -300,7 +306,7 @@ final class Anna_Content_Manager {
 		wp_nonce_field( 'anna_content_save_page', 'anna_content_page_nonce' );
 
 		$data = $this->get_about_page_content_with_defaults( $post->ID );
-		$this->maybe_backfill_about_page_people_items( $post->ID, $data );
+		$this->maybe_backfill_about_page_meta( $post->ID, $data );
 		?>
 		<p><?php esc_html_e( 'These fields feed the fixed About page design. Admins can edit copy and images only; the section layout stays in the theme.', 'anna-baylis' ); ?></p>
 
@@ -365,7 +371,24 @@ final class Anna_Content_Manager {
 					<p class="description"><?php esc_html_e( 'Optional logo, or initials in the green circle when no logo is set.', 'anna-baylis' ); ?></p>
 					<?php
 					$people_items = isset( $data['people_items'] ) && is_array( $data['people_items'] ) ? $data['people_items'] : array();
+					$people_count = count( $people_items );
 					?>
+					<div class="anna-repeater-collapse">
+						<button type="button" class="anna-repeater-collapse__toggle" data-anna-repeater-collapse-toggle="true" aria-expanded="false">
+							<span class="anna-repeater-collapse__arrow" aria-hidden="true">▶</span>
+							<span class="anna-repeater-collapse__label">
+								<?php
+								echo esc_html(
+									sprintf(
+										/* translators: %d: number of qualification cards */
+										__( 'Show all cards (%d)', 'anna-baylis' ),
+										$people_count
+									)
+								);
+								?>
+							</span>
+						</button>
+						<div class="anna-repeater-collapse__panel is-collapsed" data-anna-repeater-collapse-panel="true">
 					<div class="anna-content-repeater" data-anna-content-repeater="people-items">
 						<div class="anna-content-repeater__rows" data-anna-content-repeater-rows="true">
 							<?php foreach ( $people_items as $index => $item ) : ?>
@@ -448,6 +471,8 @@ final class Anna_Content_Manager {
 								<hr>
 							</div>
 						</template>
+					</div>
+						</div>
 					</div>
 				</td>
 			</tr>
@@ -831,6 +856,18 @@ final class Anna_Content_Manager {
 		$defaults = $this->get_about_page_defaults();
 		$merged   = wp_parse_args( $stored, $defaults );
 
+		foreach ( $defaults as $key => $default_value ) {
+			if ( 'people_items' === $key ) {
+				continue;
+			}
+
+			if ( ! array_key_exists( $key, $merged ) || $this->is_blank_section_value( $merged[ $key ], $key ) ) {
+				if ( ! $this->is_blank_section_value( $default_value, $key ) ) {
+					$merged[ $key ] = $default_value;
+				}
+			}
+		}
+
 		// wp_parse_args keeps an empty people_items array from saved meta; fill from defaults/theme.
 		$merged['people_items'] = $this->resolve_about_people_items( $stored, $defaults );
 
@@ -927,37 +964,53 @@ final class Anna_Content_Manager {
 	}
 
 	/**
-	 * Backfill empty people_items in post meta so the page editor shows default cards once.
+	 * Backfill blank About page meta from resolved defaults (one-time per page).
 	 *
 	 * @param int   $post_id Post ID.
 	 * @param array $data    Resolved About page content.
 	 */
-	private function maybe_backfill_about_page_people_items( $post_id, $data ) {
+	private function maybe_backfill_about_page_meta( $post_id, $data ) {
 		$post_id = absint( $post_id );
-		if ( ! $post_id || empty( $data['people_items'] ) ) {
+		if ( ! $post_id || ! is_array( $data ) ) {
 			return;
 		}
 
-		if ( get_post_meta( $post_id, '_anna_about_people_items_backfilled', true ) ) {
+		if ( get_post_meta( $post_id, '_anna_about_meta_backfilled_v2', true ) ) {
 			return;
 		}
 
-		$stored = get_post_meta( $post_id, '_anna_content_about_page', true );
-		$stored = is_array( $stored ) ? $stored : array();
+		$stored  = get_post_meta( $post_id, '_anna_content_about_page', true );
+		$stored  = is_array( $stored ) ? $stored : array();
+		$changed = false;
+
+		foreach ( $data as $key => $value ) {
+			if ( 'people_items' === $key ) {
+				continue;
+			}
+
+			if ( ! array_key_exists( $key, $stored ) || $this->is_blank_section_value( $stored[ $key ], $key ) ) {
+				if ( ! $this->is_blank_section_value( $value, $key ) ) {
+					$stored[ $key ] = $value;
+					$changed        = true;
+				}
+			}
+		}
 
 		$has_items = false;
 		if ( isset( $stored['people_items'] ) && is_array( $stored['people_items'] ) ) {
 			$has_items = ! empty( $this->normalize_about_people_items( $stored['people_items'] ) );
 		}
 
-		if ( $has_items ) {
-			update_post_meta( $post_id, '_anna_about_people_items_backfilled', 1 );
-			return;
+		if ( ! $has_items && ! empty( $data['people_items'] ) ) {
+			$stored['people_items'] = $data['people_items'];
+			$changed                = true;
 		}
 
-		$stored['people_items'] = $data['people_items'];
-		update_post_meta( $post_id, '_anna_content_about_page', wp_parse_args( $stored, $this->get_about_page_defaults() ) );
-		update_post_meta( $post_id, '_anna_about_people_items_backfilled', 1 );
+		if ( $changed ) {
+			update_post_meta( $post_id, '_anna_content_about_page', $stored );
+		}
+
+		update_post_meta( $post_id, '_anna_about_meta_backfilled_v2', 1 );
 	}
 
 	/**
@@ -1081,12 +1134,98 @@ final class Anna_Content_Manager {
 	}
 
 	/**
+	 * Map theme option keys to About page meta box keys.
+	 *
+	 * @return array<string, string>
+	 */
+	private function get_about_page_theme_option_map() {
+		return array(
+			'hero_eyebrow'       => 'about_pg_hero_eyebrow',
+			'hero_heading'       => 'about_pg_hero_heading',
+			'hero_subheading'    => 'about_pg_hero_subheading',
+			'hero_description'   => 'about_pg_hero_description',
+			'hero_image_id'      => 'about_pg_hero_image_id',
+			'story_eyebrow'      => 'about_pg_story_eyebrow',
+			'story_heading'      => 'about_pg_story_heading',
+			'story_body'         => 'about_pg_story_body',
+			'story_image_id'     => 'about_pg_story_image_id',
+			'rock_heading'       => 'about_pg_rock_heading',
+			'rock_left_body'     => 'about_pg_rock_left_body',
+			'rock_right_body'    => 'about_pg_rock_right_body',
+			'coach_eyebrow'      => 'about_pg_coach_eyebrow',
+			'coach_title'        => 'about_pg_coach_title',
+			'coach_body'         => 'about_pg_coach_body',
+			'coach_button_text'  => 'about_pg_coach_button_text',
+			'coach_button_url'   => 'about_pg_coach_button_url',
+			'coach_image_id'     => 'about_pg_coach_image_id',
+			'work_eyebrow'       => 'about_pg_work_eyebrow',
+			'work_heading'       => 'about_pg_work_heading',
+			'work_body'          => 'about_pg_work_body',
+			'work_card_1_title'  => 'about_pg_work_card_1_title',
+			'work_card_1_body'   => 'about_pg_work_card_1_body',
+			'work_card_2_title'  => 'about_pg_work_card_2_title',
+			'work_card_2_body'   => 'about_pg_work_card_2_body',
+			'work_card_3_title'  => 'about_pg_work_card_3_title',
+			'work_card_3_body'   => 'about_pg_work_card_3_body',
+			'work_card_4_title'  => 'about_pg_work_card_4_title',
+			'work_card_4_body'   => 'about_pg_work_card_4_body',
+			'people_eyebrow'     => 'about_pg_people_eyebrow',
+			'people_heading'     => 'about_pg_people_heading',
+			'people_body'        => 'about_pg_people_body',
+			'connect_eyebrow'    => 'about_pg_connect_eyebrow',
+			'connect_heading'    => 'about_pg_connect_heading',
+			'connect_button_text'=> 'about_pg_connect_button_text',
+			'connect_button_url' => 'about_pg_connect_button_url',
+		);
+	}
+
+	/**
+	 * Pull About page defaults from theme options when available.
+	 *
+	 * @return array
+	 */
+	private function get_theme_mapped_about_defaults() {
+		$theme = self::get_theme_options_with_defaults();
+		$map   = $this->get_about_page_theme_option_map();
+		$out   = array();
+
+		foreach ( $map as $plugin_key => $theme_key ) {
+			if ( ! isset( $theme[ $theme_key ] ) ) {
+				continue;
+			}
+
+			$value = $theme[ $theme_key ];
+			if ( str_ends_with( $plugin_key, '_image_id' ) ) {
+				$out[ $plugin_key ] = absint( $value );
+			} else {
+				$out[ $plugin_key ] = $value;
+			}
+		}
+
+		if ( ! empty( $theme['about_pg_hero_tags_text'] ) ) {
+			$tags = preg_split( '/\r\n|\r|\n/', (string) $theme['about_pg_hero_tags_text'] );
+			$out['hero_tags'] = array_values( array_filter( array_map( 'trim', (array) $tags ) ) );
+		}
+
+		if ( ! empty( $theme['about_pg_people_items'] ) && is_array( $theme['about_pg_people_items'] ) ) {
+			$out['people_items'] = $this->normalize_about_people_items( $theme['about_pg_people_items'] );
+		} elseif ( function_exists( 'anna_get_about_people_items_from_options' ) ) {
+			$items = anna_get_about_people_items_from_options();
+			if ( ! empty( $items ) ) {
+				$out['people_items'] = $items;
+			}
+		}
+
+		return $out;
+	}
+
+	/**
 	 * Default fixed About page content.
 	 *
 	 * @return array
 	 */
 	private function get_about_page_defaults() {
-		return array(
+		$defaults = array(
 			'hero_eyebrow'       => __( 'About Anna', 'anna-baylis' ),
 			'hero_heading'       => __( "Hi, I'm Anna.\nI became the coach\nI am because of\nwhat I've lived through.", 'anna-baylis' ),
 			'hero_subheading'    => '',
@@ -1139,6 +1278,13 @@ final class Anna_Content_Manager {
 			'connect_button_text' => __( 'Book a Discovery Call', 'anna-baylis' ),
 			'connect_button_url'  => '#contact',
 		);
+
+		$theme_defaults = $this->get_theme_mapped_about_defaults();
+		if ( ! empty( $theme_defaults ) ) {
+			$defaults = wp_parse_args( $theme_defaults, $defaults );
+		}
+
+		return $defaults;
 	}
 
 	/**
