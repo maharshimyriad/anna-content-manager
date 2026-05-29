@@ -195,17 +195,20 @@ final class Anna_Content_Manager {
 		}
 
 		wp_enqueue_media();
+		$css_path = ANNA_CONTENT_MANAGER_DIR . 'assets/css/admin-page-content.css';
+		$js_path  = ANNA_CONTENT_MANAGER_DIR . 'assets/js/admin-page-content.js';
+
 		wp_enqueue_style(
 			'anna-content-manager-admin',
 			ANNA_CONTENT_MANAGER_URL . 'assets/css/admin-page-content.css',
 			array(),
-			ANNA_CONTENT_MANAGER_VERSION
+			file_exists( $css_path ) ? (string) filemtime( $css_path ) : ANNA_CONTENT_MANAGER_VERSION
 		);
 		wp_enqueue_script(
 			'anna-content-manager-admin',
 			ANNA_CONTENT_MANAGER_URL . 'assets/js/admin-page-content.js',
 			array( 'jquery' ),
-			ANNA_CONTENT_MANAGER_VERSION,
+			file_exists( $js_path ) ? (string) filemtime( $js_path ) : ANNA_CONTENT_MANAGER_VERSION,
 			true
 		);
 	}
@@ -374,7 +377,7 @@ final class Anna_Content_Manager {
 					$people_count = count( $people_items );
 					?>
 					<div class="anna-repeater-collapse">
-						<button type="button" class="anna-repeater-collapse__toggle" data-anna-repeater-collapse-toggle="true" aria-expanded="false">
+						<button type="button" class="anna-repeater-collapse__toggle" aria-expanded="false">
 							<span class="anna-repeater-collapse__arrow" aria-hidden="true">▶</span>
 							<span class="anna-repeater-collapse__label">
 								<?php

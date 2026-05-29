@@ -33,7 +33,11 @@
 }
 
 .anna-repeater-collapse__panel.is-collapsed {
-  display: none;
+  display: none !important;
+}
+
+.anna-repeater-collapse__panel:not(.is-collapsed) {
+  display: block;
 }
 
 .anna-content-repeater__row {

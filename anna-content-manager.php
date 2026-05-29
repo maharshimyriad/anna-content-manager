@@ -10,7 +10,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 	exit;
 }
 
-define( 'ANNA_CONTENT_MANAGER_VERSION', '0.1.0' );
+define( 'ANNA_CONTENT_MANAGER_VERSION', '0.1.1' );
 define( 'ANNA_CONTENT_MANAGER_FILE', __FILE__ );
 define( 'ANNA_CONTENT_MANAGER_DIR', plugin_dir_path( __FILE__ ) );
 define( 'ANNA_CONTENT_MANAGER_URL', plugin_dir_url( __FILE__ ) );
