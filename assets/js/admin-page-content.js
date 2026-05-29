@@ -27,4 +27,25 @@
     $('#' + $(this).data('target')).val('');
     $('#' + $(this).data('preview')).empty();
   });
+
+  $(document).on('click', '[data-anna-content-repeater-add="true"]', function (event) {
+    event.preventDefault();
+
+    var repeater = $(this).closest('[data-anna-content-repeater]');
+    var rowsWrap = repeater.find('[data-anna-content-repeater-rows="true"]').first();
+    var template = repeater.find('[data-anna-content-repeater-template="true"]').first();
+
+    if (!template.length || !rowsWrap.length) {
+      return;
+    }
+
+    var index = rowsWrap.find('[data-anna-content-repeater-row="true"]').length;
+    var html = template.html().replace(/__INDEX__/g, String(index));
+    rowsWrap.append(html);
+  });
+
+  $(document).on('click', '[data-anna-content-repeater-remove="true"]', function (event) {
+    event.preventDefault();
+    $(this).closest('[data-anna-content-repeater-row="true"]').remove();
+  });
 })(jQuery);

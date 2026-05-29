@@ -361,12 +361,96 @@ final class Anna_Content_Manager {
 			<?php $this->render_textarea_field( 'anna_content_about_page', 'people_items', __( 'Items', 'anna-baylis' ), is_array( $data['people_items'] ) ? implode( "\n", $data['people_items'] ) : $data['people_items'], 10, __( 'One item per line: INITIALS|TITLE|ORG', 'anna-baylis' ) ); ?>
 		</table>
 
-		<h3><?php esc_html_e( 'My Life Now', 'anna-baylis' ); ?></h3>
+		<h3><?php esc_html_e( 'Qualifications', 'anna-baylis' ); ?></h3>
 		<table class="form-table">
-			<?php $this->render_media_field( 'anna_content_about_page', 'life_image_id', __( 'Image', 'anna-baylis' ), $data['life_image_id'] ); ?>
-			<?php $this->render_text_field( 'anna_content_about_page', 'life_eyebrow', __( 'Eyebrow', 'anna-baylis' ), $data['life_eyebrow'] ); ?>
-			<?php $this->render_text_field( 'anna_content_about_page', 'life_heading', __( 'Heading', 'anna-baylis' ), $data['life_heading'] ); ?>
-			<?php $this->render_editor_field( 'anna_content_about_page', 'life_body', __( 'Body', 'anna-baylis' ), $data['life_body'], $post->ID ); ?>
+			<?php $this->render_text_field( 'anna_content_about_page', 'qual_eyebrow', __( 'Eyebrow', 'anna-baylis' ), $data['qual_eyebrow'] ); ?>
+			<?php $this->render_text_field( 'anna_content_about_page', 'qual_heading', __( 'Heading', 'anna-baylis' ), $data['qual_heading'] ); ?>
+			<?php $this->render_textarea_field( 'anna_content_about_page', 'qual_body', __( 'Intro', 'anna-baylis' ), $data['qual_body'], 3 ); ?>
+			<tr>
+				<th scope="row"><?php esc_html_e( 'Qualification Cards', 'anna-baylis' ); ?></th>
+				<td>
+					<?php
+					$qualifications = isset( $data['qualifications'] ) && is_array( $data['qualifications'] ) ? $data['qualifications'] : array();
+					?>
+					<div class="anna-content-repeater" data-anna-content-repeater="qualifications">
+						<div class="anna-content-repeater__rows" data-anna-content-repeater-rows="true">
+							<?php foreach ( $qualifications as $index => $item ) : ?>
+								<?php
+								$logo_id     = absint( $item['logo_id'] ?? 0 );
+								$title       = (string) ( $item['title'] ?? '' );
+								$description = (string) ( $item['description'] ?? '' );
+								$input_id    = 'anna-content-about-qual-' . (int) $index . '-logo-id';
+								$preview_id  = 'anna-content-about-qual-' . (int) $index . '-logo-preview';
+								$img_url     = $logo_id ? wp_get_attachment_image_url( $logo_id, 'thumbnail' ) : '';
+								?>
+								<div class="anna-content-repeater__row" data-anna-content-repeater-row="true">
+									<p><strong><?php esc_html_e( 'Card', 'anna-baylis' ); ?></strong></p>
+									<p>
+										<input type="hidden" id="<?php echo esc_attr( $input_id ); ?>" name="anna_content_about_page[qualifications][<?php echo esc_attr( $index ); ?>][logo_id]" value="<?php echo esc_attr( $logo_id ); ?>">
+										<span id="<?php echo esc_attr( $preview_id ); ?>" style="display:block;margin:8px 0;">
+											<?php if ( $img_url ) : ?>
+												<img src="<?php echo esc_url( $img_url ); ?>" alt="" style="max-width:120px;height:auto;border-radius:10px;">
+											<?php endif; ?>
+										</span>
+										<button type="button" class="button anna-content-media-select" data-target="<?php echo esc_attr( $input_id ); ?>" data-preview="<?php echo esc_attr( $preview_id ); ?>"><?php esc_html_e( 'Select Logo', 'anna-baylis' ); ?></button>
+										<button type="button" class="button anna-content-media-remove" data-target="<?php echo esc_attr( $input_id ); ?>" data-preview="<?php echo esc_attr( $preview_id ); ?>"><?php esc_html_e( 'Remove', 'anna-baylis' ); ?></button>
+									</p>
+									<p>
+										<label><?php esc_html_e( 'Title', 'anna-baylis' ); ?><br>
+											<input type="text" class="large-text" name="anna_content_about_page[qualifications][<?php echo esc_attr( $index ); ?>][title]" value="<?php echo esc_attr( $title ); ?>">
+										</label>
+									</p>
+									<p>
+										<label><?php esc_html_e( 'Description', 'anna-baylis' ); ?><br>
+											<textarea class="large-text" rows="3" name="anna_content_about_page[qualifications][<?php echo esc_attr( $index ); ?>][description]"><?php echo esc_textarea( $description ); ?></textarea>
+										</label>
+									</p>
+									<p>
+										<button type="button" class="button-link-delete" data-anna-content-repeater-remove="true"><?php esc_html_e( 'Remove card', 'anna-baylis' ); ?></button>
+									</p>
+									<hr>
+								</div>
+							<?php endforeach; ?>
+						</div>
+
+						<button type="button" class="button" data-anna-content-repeater-add="true"><?php esc_html_e( 'Add Qualification', 'anna-baylis' ); ?></button>
+
+						<template data-anna-content-repeater-template="true">
+							<div class="anna-content-repeater__row" data-anna-content-repeater-row="true">
+								<p><strong><?php esc_html_e( 'Card', 'anna-baylis' ); ?></strong></p>
+								<p>
+									<input type="hidden" id="anna-content-about-qual-__INDEX__-logo-id" name="anna_content_about_page[qualifications][__INDEX__][logo_id]" value="">
+									<span id="anna-content-about-qual-__INDEX__-logo-preview" style="display:block;margin:8px 0;"></span>
+									<button type="button" class="button anna-content-media-select" data-target="anna-content-about-qual-__INDEX__-logo-id" data-preview="anna-content-about-qual-__INDEX__-logo-preview"><?php esc_html_e( 'Select Logo', 'anna-baylis' ); ?></button>
+									<button type="button" class="button anna-content-media-remove" data-target="anna-content-about-qual-__INDEX__-logo-id" data-preview="anna-content-about-qual-__INDEX__-logo-preview"><?php esc_html_e( 'Remove', 'anna-baylis' ); ?></button>
+								</p>
+								<p>
+									<label><?php esc_html_e( 'Title', 'anna-baylis' ); ?><br>
+										<input type="text" class="large-text" name="anna_content_about_page[qualifications][__INDEX__][title]" value="">
+									</label>
+								</p>
+								<p>
+									<label><?php esc_html_e( 'Description', 'anna-baylis' ); ?><br>
+										<textarea class="large-text" rows="3" name="anna_content_about_page[qualifications][__INDEX__][description]"></textarea>
+									</label>
+								</p>
+								<p>
+									<button type="button" class="button-link-delete" data-anna-content-repeater-remove="true"><?php esc_html_e( 'Remove card', 'anna-baylis' ); ?></button>
+								</p>
+								<hr>
+							</div>
+						</template>
+					</div>
+				</td>
+			</tr>
+		</table>
+
+		<h3><?php esc_html_e( 'I would love to connect', 'anna-baylis' ); ?></h3>
+		<table class="form-table">
+			<?php $this->render_text_field( 'anna_content_about_page', 'connect_eyebrow', __( 'Eyebrow', 'anna-baylis' ), $data['connect_eyebrow'] ); ?>
+			<?php $this->render_text_field( 'anna_content_about_page', 'connect_heading', __( 'Heading', 'anna-baylis' ), $data['connect_heading'] ); ?>
+			<?php $this->render_text_field( 'anna_content_about_page', 'connect_button_text', __( 'Button Text', 'anna-baylis' ), $data['connect_button_text'] ); ?>
+			<?php $this->render_text_field( 'anna_content_about_page', 'connect_button_url', __( 'Button URL', 'anna-baylis' ), $data['connect_button_url'] ); ?>
 		</table>
 		<?php
 	}
@@ -765,8 +849,12 @@ final class Anna_Content_Manager {
 			'people_eyebrow',
 			'people_heading',
 			'people_body',
-			'life_eyebrow',
-			'life_heading',
+			'qual_eyebrow',
+			'qual_heading',
+			'connect_eyebrow',
+			'connect_heading',
+			'connect_button_text',
+			'connect_button_url',
 		);
 
 		$textarea_fields = array(
@@ -779,6 +867,7 @@ final class Anna_Content_Manager {
 			'work_card_3_body',
 			'work_card_4_body',
 			'people_items',
+			'qual_body',
 		);
 
 		$html_fields = array(
@@ -787,20 +876,22 @@ final class Anna_Content_Manager {
 			'rock_right_body',
 			'coach_body',
 			'work_body',
-			'life_body',
 		);
 
 		$image_fields = array(
 			'hero_image_id',
 			'story_image_id',
 			'coach_image_id',
-			'life_image_id',
 		);
 
 		$data = array();
 
 		foreach ( $text_fields as $field ) {
 			$data[ $field ] = sanitize_text_field( $input[ $field ] ?? '' );
+		}
+
+		foreach ( array( 'coach_button_url', 'connect_button_url' ) as $url_field ) {
+			$data[ $url_field ] = esc_url_raw( $input[ $url_field ] ?? '' );
 		}
 
 		foreach ( $textarea_fields as $field ) {
@@ -827,6 +918,28 @@ final class Anna_Content_Manager {
 			$data['people_items'] = array_values( array_filter( array_map( 'trim', $items ) ) );
 		} else {
 			$data['people_items'] = array();
+		}
+
+		$data['qualifications'] = array();
+		if ( isset( $input['qualifications'] ) && is_array( $input['qualifications'] ) ) {
+			foreach ( $input['qualifications'] as $row ) {
+				if ( ! is_array( $row ) ) {
+					continue;
+				}
+				$logo_id     = absint( $row['logo_id'] ?? 0 );
+				$title       = sanitize_text_field( $row['title'] ?? '' );
+				$desc        = sanitize_textarea_field( $row['description'] ?? '' );
+
+				if ( 0 === $logo_id && '' === trim( $title ) && '' === trim( $desc ) ) {
+					continue;
+				}
+
+				$data['qualifications'][] = array(
+					'logo_id'     => $logo_id,
+					'title'       => $title,
+					'description' => $desc,
+				);
+			}
 		}
 
 		return wp_parse_args( $data, $this->get_about_page_defaults() );
@@ -886,10 +999,30 @@ final class Anna_Content_Manager {
 				'TC|Trauma-informed coaching|The Centre for Healing',
 				'SP|Personal trainer — 7+ years|NeuroAffective Touch Institute',
 			),
-			'life_eyebrow'       => __( 'Present Day', 'anna-baylis' ),
-			'life_heading'       => __( 'My life now', 'anna-baylis' ),
-			'life_body'          => '',
-			'life_image_id'      => 0,
+			'qual_eyebrow'       => __( 'My qualifications', 'anna-baylis' ),
+			'qual_heading'       => __( 'Committed to continual learning.', 'anna-baylis' ),
+			'qual_body'          => __( 'Over a decade of rigorous study across human movement, nutrition, coaching, somatic psychology, trauma-informed practice and inner world work. This is what I bring to every session.', 'anna-baylis' ),
+			'qualifications'     => array(
+				array(
+					'logo_id'     => 0,
+					'title'       => __( 'Bachelor of Applied Science — Human Movement', 'anna-baylis' ),
+					'description' => __( 'Deakin University', 'anna-baylis' ),
+				),
+				array(
+					'logo_id'     => 0,
+					'title'       => __( 'Credentialled Practitioner of Coaching', 'anna-baylis' ),
+					'description' => __( 'The Coaching Institute', 'anna-baylis' ),
+				),
+				array(
+					'logo_id'     => 0,
+					'title'       => __( 'NLP Practitioner and Master Practitioner', 'anna-baylis' ),
+					'description' => __( 'Institute of Empowered Psychology', 'anna-baylis' ),
+				),
+			),
+			'connect_eyebrow'     => __( 'I would love to connect', 'anna-baylis' ),
+			'connect_heading'     => __( 'Book a discovery call and let’s see if this is the right fit.', 'anna-baylis' ),
+			'connect_button_text' => __( 'Book a Discovery Call', 'anna-baylis' ),
+			'connect_button_url'  => '#contact',
 		);
 	}
 
