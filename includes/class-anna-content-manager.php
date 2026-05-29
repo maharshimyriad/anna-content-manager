@@ -300,9 +300,7 @@ final class Anna_Content_Manager {
 		wp_nonce_field( 'anna_content_save_page', 'anna_content_page_nonce' );
 
 		$data = $this->get_about_page_content_with_defaults( $post->ID );
-		if ( empty( $data['people_items'] ) && function_exists( 'anna_get_about_people_items_from_options' ) ) {
-			$data['people_items'] = anna_get_about_people_items_from_options();
-		}
+		$this->maybe_backfill_about_page_people_items( $post->ID, $data );
 		?>
 		<p><?php esc_html_e( 'These fields feed the fixed About page design. Admins can edit copy and images only; the section layout stays in the theme.', 'anna-baylis' ); ?></p>
 
@@ -828,10 +826,138 @@ final class Anna_Content_Manager {
 	 * @return array
 	 */
 	private function get_about_page_content_with_defaults( $post_id ) {
-		$stored = get_post_meta( absint( $post_id ), '_anna_content_about_page', true );
+		$stored   = get_post_meta( absint( $post_id ), '_anna_content_about_page', true );
+		$stored   = is_array( $stored ) ? $stored : array();
+		$defaults = $this->get_about_page_defaults();
+		$merged   = wp_parse_args( $stored, $defaults );
+
+		// wp_parse_args keeps an empty people_items array from saved meta; fill from defaults/theme.
+		$merged['people_items'] = $this->resolve_about_people_items( $stored, $defaults );
+
+		return $merged;
+	}
+
+	/**
+	 * Resolve repeater rows for "What people say" (saved meta + legacy + theme defaults).
+	 *
+	 * @param array $stored  Saved post meta (partial).
+	 * @param array $defaults Plugin defaults for the About page.
+	 * @return array<int, array{logo_id:int,initials:string,title:string,org:string}>
+	 */
+	private function resolve_about_people_items( $stored, $defaults ) {
+		if ( isset( $stored['people_items'] ) && is_array( $stored['people_items'] ) && ! empty( $stored['people_items'] ) ) {
+			if ( is_string( reset( $stored['people_items'] ) ) && function_exists( 'anna_parse_about_people_items' ) && function_exists( 'anna_normalize_about_people_items' ) ) {
+				$lines = implode( "\n", array_map( 'strval', $stored['people_items'] ) );
+				$items = anna_normalize_about_people_items( anna_parse_about_people_items( $lines ) );
+				if ( ! empty( $items ) ) {
+					return $items;
+				}
+			}
+
+			$items = $this->normalize_about_people_items( $stored['people_items'] );
+			if ( ! empty( $items ) ) {
+				return $items;
+			}
+		}
+
+		if ( isset( $stored['qualifications'] ) && is_array( $stored['qualifications'] ) && ! empty( $stored['qualifications'] ) ) {
+			if ( function_exists( 'anna_convert_qualifications_to_people_items' ) ) {
+				$items = anna_convert_qualifications_to_people_items( $stored['qualifications'] );
+				if ( ! empty( $items ) ) {
+					return $items;
+				}
+			}
+
+			$items = $this->normalize_about_people_items( $stored['qualifications'] );
+			if ( ! empty( $items ) ) {
+				return $items;
+			}
+		}
+
+		if ( function_exists( 'anna_get_about_people_items_from_options' ) ) {
+			$items = anna_get_about_people_items_from_options();
+			if ( ! empty( $items ) ) {
+				return $items;
+			}
+		}
+
+		$default_items = $defaults['people_items'] ?? array();
+		return $this->normalize_about_people_items( $default_items );
+	}
+
+	/**
+	 * Normalize people repeater rows for admin + frontend.
+	 *
+	 * @param array $rows Raw rows.
+	 * @return array<int, array{logo_id:int,initials:string,title:string,org:string}>
+	 */
+	private function normalize_about_people_items( $rows ) {
+		if ( function_exists( 'anna_normalize_about_people_items' ) ) {
+			return anna_normalize_about_people_items( $rows );
+		}
+
+		if ( ! is_array( $rows ) ) {
+			return array();
+		}
+
+		$items = array();
+		foreach ( $rows as $row ) {
+			if ( ! is_array( $row ) ) {
+				continue;
+			}
+
+			$logo_id  = absint( $row['logo_id'] ?? 0 );
+			$initials = sanitize_text_field( $row['initials'] ?? '' );
+			$title    = sanitize_text_field( $row['title'] ?? '' );
+			$org      = sanitize_textarea_field( $row['org'] ?? $row['description'] ?? '' );
+
+			if ( 0 === $logo_id && '' === trim( $initials ) && '' === trim( $title ) && '' === trim( $org ) ) {
+				continue;
+			}
+
+			$items[] = array(
+				'logo_id'  => $logo_id,
+				'initials' => $initials,
+				'title'    => $title,
+				'org'      => $org,
+			);
+		}
+
+		return $items;
+	}
+
+	/**
+	 * Backfill empty people_items in post meta so the page editor shows default cards once.
+	 *
+	 * @param int   $post_id Post ID.
+	 * @param array $data    Resolved About page content.
+	 */
+	private function maybe_backfill_about_page_people_items( $post_id, $data ) {
+		$post_id = absint( $post_id );
+		if ( ! $post_id || empty( $data['people_items'] ) ) {
+			return;
+		}
+
+		if ( get_post_meta( $post_id, '_anna_about_people_items_backfilled', true ) ) {
+			return;
+		}
+
+		$stored = get_post_meta( $post_id, '_anna_content_about_page', true );
 		$stored = is_array( $stored ) ? $stored : array();
 
-		return wp_parse_args( $stored, $this->get_about_page_defaults() );
+		$has_items = false;
+		if ( isset( $stored['people_items'] ) && is_array( $stored['people_items'] ) ) {
+			$has_items = ! empty( $this->normalize_about_people_items( $stored['people_items'] ) );
+		}
+
+		if ( $has_items ) {
+			update_post_meta( $post_id, '_anna_about_people_items_backfilled', 1 );
+			return;
+		}
+
+		$stored['people_items'] = $data['people_items'];
+		update_post_meta( $post_id, '_anna_content_about_page', wp_parse_args( $stored, $this->get_about_page_defaults() ) );
+		update_post_meta( $post_id, '_anna_about_people_items_backfilled', 1 );
 	}
 
 	/**
@@ -944,7 +1070,14 @@ final class Anna_Content_Manager {
 			}
 		}
 
-		return wp_parse_args( $data, $this->get_about_page_defaults() );
+		$defaults = $this->get_about_page_defaults();
+		$merged   = wp_parse_args( $data, $defaults );
+
+		if ( empty( $merged['people_items'] ) ) {
+			$merged['people_items'] = $defaults['people_items'] ?? array();
+		}
+
+		return $merged;
 	}
 
 	/**
