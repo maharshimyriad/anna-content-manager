@@ -8,6 +8,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 }
 
 final class Anna_Content_Manager {
+	use Anna_Oasis_Page_Content;
 	/**
 	 * Singleton instance.
 	 *
@@ -170,6 +171,10 @@ final class Anna_Content_Manager {
 				'normal',
 				'high'
 			);
+		}
+
+		if ( $is_page ) {
+			$this->register_oasis_page_meta_box( $post );
 		}
 
 		if ( ! $is_front_page ) {
@@ -747,6 +752,8 @@ final class Anna_Content_Manager {
 			$input = wp_unslash( $_POST['anna_content_coaching_page'] );
 			update_post_meta( $post_id, '_anna_content_coaching_page', $this->sanitize_coaching_page_content( $input ) );
 		}
+
+		$this->save_oasis_page_content( $post_id );
 
 		if ( isset( $_POST['anna_content_hero'] ) && is_array( $_POST['anna_content_hero'] ) ) {
 			$hero = wp_unslash( $_POST['anna_content_hero'] );
@@ -2087,4 +2094,14 @@ function anna_content_get_about_page_content( $post_id ) {
  */
 function anna_content_get_coaching_page_content( $post_id ) {
 	return Anna_Content_Manager::instance()->get_coaching_page_content( $post_id );
+}
+
+/**
+ * Public helper for the fixed Oasis page template.
+ *
+ * @param int $post_id Post ID.
+ * @return array
+ */
+function anna_content_get_oasis_page_content( $post_id ) {
+	return Anna_Content_Manager::instance()->get_oasis_page_content( $post_id );
 }
