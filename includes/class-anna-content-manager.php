@@ -148,12 +148,24 @@ final class Anna_Content_Manager {
 		$is_page       = $post instanceof WP_Post;
 		$is_front_page = $is_page && (int) get_option( 'page_on_front' ) === (int) $post->ID;
 		$is_about_page = $is_page && ( 'about' === $post->post_name || 'page-about.php' === get_page_template_slug( $post->ID ) );
+		$is_coaching_page = $is_page && ( 'coaching' === $post->post_name || 'page-coaching.php' === get_page_template_slug( $post->ID ) );
 
 		if ( $is_about_page ) {
 			add_meta_box(
 				'anna_content_about_page',
 				__( 'Anna About Page Content', 'anna-baylis' ),
 				array( $this, 'render_about_page_meta_box' ),
+				'page',
+				'normal',
+				'high'
+			);
+		}
+
+		if ( $is_coaching_page ) {
+			add_meta_box(
+				'anna_content_coaching_page',
+				__( 'Anna Coaching Page Content', 'anna-baylis' ),
+				array( $this, 'render_coaching_page_meta_box' ),
 				'page',
 				'normal',
 				'high'
@@ -729,6 +741,11 @@ final class Anna_Content_Manager {
 		if ( isset( $_POST['anna_content_about_page'] ) && is_array( $_POST['anna_content_about_page'] ) ) {
 			$input = wp_unslash( $_POST['anna_content_about_page'] );
 			update_post_meta( $post_id, '_anna_content_about_page', $this->sanitize_about_page_content( $input ) );
+		}
+
+		if ( isset( $_POST['anna_content_coaching_page'] ) && is_array( $_POST['anna_content_coaching_page'] ) ) {
+			$input = wp_unslash( $_POST['anna_content_coaching_page'] );
+			update_post_meta( $post_id, '_anna_content_coaching_page', $this->sanitize_coaching_page_content( $input ) );
 		}
 
 		if ( isset( $_POST['anna_content_hero'] ) && is_array( $_POST['anna_content_hero'] ) ) {
@@ -1470,6 +1487,481 @@ final class Anna_Content_Manager {
 		return false;
 	}
 
+	/**
+	 * Render fixed Coaching page content fields.
+	 *
+	 * @param WP_Post $post Post object.
+	 */
+	public function render_coaching_page_meta_box( $post ) {
+		wp_nonce_field( 'anna_content_save_page', 'anna_content_page_nonce' );
+
+		$data = $this->get_coaching_page_content_with_defaults( $post->ID );
+		$this->maybe_backfill_coaching_page_meta( $post->ID, $data );
+		?>
+		<p><?php esc_html_e( 'These fields feed the fixed Coaching page design. Admins can edit copy and images only.', 'anna-baylis' ); ?></p>
+
+		<h3><?php esc_html_e( 'Hero', 'anna-baylis' ); ?></h3>
+		<table class="form-table">
+			<?php $this->render_text_field( 'anna_content_coaching_page', 'hero_eyebrow', __( 'Eyebrow', 'anna-baylis' ), $data['hero_eyebrow'] ); ?>
+			<?php $this->render_textarea_field( 'anna_content_coaching_page', 'hero_heading', __( 'Heading', 'anna-baylis' ), $data['hero_heading'], 3 ); ?>
+			<?php $this->render_textarea_field( 'anna_content_coaching_page', 'hero_description', __( 'Description', 'anna-baylis' ), $data['hero_description'], 3 ); ?>
+			<?php $this->render_textarea_field( 'anna_content_coaching_page', 'hero_tags', __( 'Hero Tags', 'anna-baylis' ), is_array( $data['hero_tags'] ) ? implode( "\n", $data['hero_tags'] ) : $data['hero_tags'], 5, __( 'One tag per line.', 'anna-baylis' ) ); ?>
+			<?php $this->render_media_field( 'anna_content_coaching_page', 'hero_image_id', __( 'Hero Background Image', 'anna-baylis' ), $data['hero_image_id'] ); ?>
+			<?php $this->render_text_field( 'anna_content_coaching_page', 'hero_button_text', __( 'Button Text', 'anna-baylis' ), $data['hero_button_text'] ); ?>
+			<?php $this->render_text_field( 'anna_content_coaching_page', 'hero_button_url', __( 'Button URL', 'anna-baylis' ), $data['hero_button_url'] ); ?>
+		</table>
+
+		<h3><?php esc_html_e( 'What We Work On', 'anna-baylis' ); ?></h3>
+		<table class="form-table">
+			<?php $this->render_text_field( 'anna_content_coaching_page', 'work_eyebrow', __( 'Eyebrow', 'anna-baylis' ), $data['work_eyebrow'] ); ?>
+			<?php $this->render_text_field( 'anna_content_coaching_page', 'work_heading', __( 'Heading', 'anna-baylis' ), $data['work_heading'] ); ?>
+			<?php $this->render_text_field( 'anna_content_coaching_page', 'work_gains_heading', __( 'Gains Heading', 'anna-baylis' ), $data['work_gains_heading'] ); ?>
+			<?php $this->render_coaching_text_repeater_field( 'work_topics_items', $data['work_topics_items'] ?? array(), __( 'Session Topics', 'anna-baylis' ) ); ?>
+			<?php $this->render_coaching_text_repeater_field( 'work_gains_items', $data['work_gains_items'] ?? array(), __( 'What Clients Gain', 'anna-baylis' ), __( 'Use **word** to bold key terms.', 'anna-baylis' ) ); ?>
+		</table>
+
+		<h3><?php esc_html_e( 'What to Expect', 'anna-baylis' ); ?></h3>
+		<table class="form-table">
+			<?php $this->render_text_field( 'anna_content_coaching_page', 'expect_eyebrow', __( 'Eyebrow (optional)', 'anna-baylis' ), $data['expect_eyebrow'] ); ?>
+			<?php $this->render_text_field( 'anna_content_coaching_page', 'expect_heading_line1', __( 'Heading Line 1', 'anna-baylis' ), $data['expect_heading_line1'] ); ?>
+			<?php $this->render_text_field( 'anna_content_coaching_page', 'expect_heading_line2', __( 'Heading Line 2', 'anna-baylis' ), $data['expect_heading_line2'] ); ?>
+			<?php $this->render_textarea_field( 'anna_content_coaching_page', 'expect_body', __( 'Body', 'anna-baylis' ), $data['expect_body'], 6 ); ?>
+			<?php $this->render_textarea_field( 'anna_content_coaching_page', 'expect_quote', __( 'Quote', 'anna-baylis' ), $data['expect_quote'], 3 ); ?>
+			<?php $this->render_text_field( 'anna_content_coaching_page', 'expect_button_text', __( 'Button Text', 'anna-baylis' ), $data['expect_button_text'] ); ?>
+			<?php $this->render_text_field( 'anna_content_coaching_page', 'expect_button_url', __( 'Button URL', 'anna-baylis' ), $data['expect_button_url'] ); ?>
+			<?php $this->render_coaching_info_cards_repeater_field( $data['expect_info_cards'] ?? array() ); ?>
+		</table>
+
+		<h3><?php esc_html_e( 'FAQ', 'anna-baylis' ); ?></h3>
+		<table class="form-table">
+			<?php $this->render_text_field( 'anna_content_coaching_page', 'faq_heading', __( 'Section Heading', 'anna-baylis' ), $data['faq_heading'] ); ?>
+			<?php $this->render_coaching_faq_repeater_field( $data['faq_items'] ?? array() ); ?>
+		</table>
+		<?php
+	}
+
+	/**
+	 * Render coaching text repeater in page editor.
+	 *
+	 * @param string $key   Field key.
+	 * @param array  $items Items.
+	 * @param string $label Label.
+	 * @param string $desc  Description.
+	 */
+	private function render_coaching_text_repeater_field( $key, $items, $label, $desc = '' ) {
+		$items = function_exists( 'anna_normalize_coaching_text_items' ) ? anna_normalize_coaching_text_items( $items ) : (array) $items;
+		?>
+		<tr>
+			<th scope="row"><?php echo esc_html( $label ); ?></th>
+			<td>
+				<?php if ( $desc ) : ?><p class="description"><?php echo esc_html( $desc ); ?></p><?php endif; ?>
+				<div class="anna-content-repeater" data-anna-content-repeater="<?php echo esc_attr( $key ); ?>">
+					<div class="anna-content-repeater__rows" data-anna-content-repeater-rows="true">
+						<?php foreach ( $items as $index => $item ) : ?>
+							<div class="anna-content-repeater__row" data-anna-content-repeater-row="true">
+								<p><input type="text" class="large-text" name="anna_content_coaching_page[<?php echo esc_attr( $key ); ?>][<?php echo esc_attr( $index ); ?>][text]" value="<?php echo esc_attr( $item['text'] ?? '' ); ?>"></p>
+								<p><button type="button" class="button-link-delete" data-anna-content-repeater-remove="true"><?php esc_html_e( 'Remove', 'anna-baylis' ); ?></button></p><hr>
+							</div>
+						<?php endforeach; ?>
+					</div>
+					<button type="button" class="button" data-anna-content-repeater-add="true"><?php esc_html_e( 'Add Item', 'anna-baylis' ); ?></button>
+					<template data-anna-content-repeater-template="true">
+						<div class="anna-content-repeater__row" data-anna-content-repeater-row="true">
+							<p><input type="text" class="large-text" name="anna_content_coaching_page[<?php echo esc_attr( $key ); ?>][__INDEX__][text]" value=""></p>
+							<p><button type="button" class="button-link-delete" data-anna-content-repeater-remove="true"><?php esc_html_e( 'Remove', 'anna-baylis' ); ?></button></p><hr>
+						</div>
+					</template>
+				</div>
+			</td>
+		</tr>
+		<?php
+	}
+
+	/**
+	 * Render coaching info cards repeater.
+	 *
+	 * @param array $items Cards.
+	 */
+	private function render_coaching_info_cards_repeater_field( $items ) {
+		$items = function_exists( 'anna_normalize_coaching_info_cards' ) ? anna_normalize_coaching_info_cards( $items ) : (array) $items;
+		?>
+		<tr>
+			<th scope="row"><?php esc_html_e( 'Info Cards', 'anna-baylis' ); ?></th>
+			<td>
+				<div class="anna-content-repeater" data-anna-content-repeater="expect-info-cards">
+					<div class="anna-content-repeater__rows" data-anna-content-repeater-rows="true">
+						<?php foreach ( $items as $index => $item ) : ?>
+							<div class="anna-content-repeater__row" data-anna-content-repeater-row="true">
+								<p><label><?php esc_html_e( 'Label', 'anna-baylis' ); ?><br><input type="text" class="regular-text" name="anna_content_coaching_page[expect_info_cards][<?php echo esc_attr( $index ); ?>][label]" value="<?php echo esc_attr( $item['label'] ?? '' ); ?>"></label></p>
+								<p><label><?php esc_html_e( 'Body', 'anna-baylis' ); ?><br><textarea class="large-text" rows="3" name="anna_content_coaching_page[expect_info_cards][<?php echo esc_attr( $index ); ?>][body]"><?php echo esc_textarea( $item['body'] ?? '' ); ?></textarea></label></p>
+								<p><button type="button" class="button-link-delete" data-anna-content-repeater-remove="true"><?php esc_html_e( 'Remove', 'anna-baylis' ); ?></button></p><hr>
+							</div>
+						<?php endforeach; ?>
+					</div>
+					<button type="button" class="button" data-anna-content-repeater-add="true"><?php esc_html_e( 'Add Card', 'anna-baylis' ); ?></button>
+					<template data-anna-content-repeater-template="true">
+						<div class="anna-content-repeater__row" data-anna-content-repeater-row="true">
+							<p><label><?php esc_html_e( 'Label', 'anna-baylis' ); ?><br><input type="text" class="regular-text" name="anna_content_coaching_page[expect_info_cards][__INDEX__][label]" value=""></label></p>
+							<p><label><?php esc_html_e( 'Body', 'anna-baylis' ); ?><br><textarea class="large-text" rows="3" name="anna_content_coaching_page[expect_info_cards][__INDEX__][body]"></textarea></label></p>
+							<p><button type="button" class="button-link-delete" data-anna-content-repeater-remove="true"><?php esc_html_e( 'Remove', 'anna-baylis' ); ?></button></p><hr>
+						</div>
+					</template>
+				</div>
+			</td>
+		</tr>
+		<?php
+	}
+
+	/**
+	 * Render coaching FAQ repeater.
+	 *
+	 * @param array $items FAQ rows.
+	 */
+	private function render_coaching_faq_repeater_field( $items ) {
+		$items = function_exists( 'anna_normalize_coaching_faq_items' ) ? anna_normalize_coaching_faq_items( $items ) : (array) $items;
+		?>
+		<tr>
+			<th scope="row"><?php esc_html_e( 'FAQ Items', 'anna-baylis' ); ?></th>
+			<td>
+				<div class="anna-content-repeater" data-anna-content-repeater="coaching-faq">
+					<div class="anna-content-repeater__rows" data-anna-content-repeater-rows="true">
+						<?php foreach ( $items as $index => $item ) : ?>
+							<div class="anna-content-repeater__row" data-anna-content-repeater-row="true">
+								<p><label><?php esc_html_e( 'Question', 'anna-baylis' ); ?><br><input type="text" class="large-text" name="anna_content_coaching_page[faq_items][<?php echo esc_attr( $index ); ?>][question]" value="<?php echo esc_attr( $item['question'] ?? '' ); ?>"></label></p>
+								<p><label><?php esc_html_e( 'Answer', 'anna-baylis' ); ?><br><textarea class="large-text" rows="4" name="anna_content_coaching_page[faq_items][<?php echo esc_attr( $index ); ?>][answer]"><?php echo esc_textarea( $item['answer'] ?? '' ); ?></textarea></label></p>
+								<p><button type="button" class="button-link-delete" data-anna-content-repeater-remove="true"><?php esc_html_e( 'Remove', 'anna-baylis' ); ?></button></p><hr>
+							</div>
+						<?php endforeach; ?>
+					</div>
+					<button type="button" class="button" data-anna-content-repeater-add="true"><?php esc_html_e( 'Add Question', 'anna-baylis' ); ?></button>
+					<template data-anna-content-repeater-template="true">
+						<div class="anna-content-repeater__row" data-anna-content-repeater-row="true">
+							<p><label><?php esc_html_e( 'Question', 'anna-baylis' ); ?><br><input type="text" class="large-text" name="anna_content_coaching_page[faq_items][__INDEX__][question]" value=""></label></p>
+							<p><label><?php esc_html_e( 'Answer', 'anna-baylis' ); ?><br><textarea class="large-text" rows="4" name="anna_content_coaching_page[faq_items][__INDEX__][answer]"></textarea></label></p>
+							<p><button type="button" class="button-link-delete" data-anna-content-repeater-remove="true"><?php esc_html_e( 'Remove', 'anna-baylis' ); ?></button></p><hr>
+						</div>
+					</template>
+				</div>
+			</td>
+		</tr>
+		<?php
+	}
+
+	/**
+	 * Get fixed Coaching page content.
+	 *
+	 * @param int $post_id Post ID.
+	 * @return array
+	 */
+	public function get_coaching_page_content( $post_id ) {
+		return $this->get_coaching_page_content_with_defaults( $post_id );
+	}
+
+	/**
+	 * Get Coaching page content with defaults.
+	 *
+	 * @param int $post_id Post ID.
+	 * @return array
+	 */
+	private function get_coaching_page_content_with_defaults( $post_id ) {
+		$stored   = get_post_meta( absint( $post_id ), '_anna_content_coaching_page', true );
+		$stored   = is_array( $stored ) ? $stored : array();
+		$defaults = $this->get_coaching_page_defaults();
+		$merged   = wp_parse_args( $stored, $defaults );
+
+		foreach ( $defaults as $key => $default_value ) {
+			if ( in_array( $key, array( 'work_topics_items', 'work_gains_items', 'expect_info_cards', 'faq_items' ), true ) ) {
+				continue;
+			}
+
+			if ( ! array_key_exists( $key, $merged ) || $this->is_blank_section_value( $merged[ $key ], $key ) ) {
+				if ( ! $this->is_blank_section_value( $default_value, $key ) ) {
+					$merged[ $key ] = $default_value;
+				}
+			}
+		}
+
+		$merged['work_topics_items'] = $this->resolve_coaching_text_items( $stored, $defaults, 'work_topics_items' );
+		$merged['work_gains_items']  = $this->resolve_coaching_text_items( $stored, $defaults, 'work_gains_items' );
+		$merged['expect_info_cards'] = $this->resolve_coaching_info_cards( $stored, $defaults );
+		$merged['faq_items']         = $this->resolve_coaching_faq_items( $stored, $defaults );
+
+		if ( ! empty( $merged['hero_tags'] ) && is_string( $merged['hero_tags'] ) ) {
+			$tags = preg_split( '/\r\n|\r|\n/', $merged['hero_tags'] );
+			$merged['hero_tags'] = array_values( array_filter( array_map( 'trim', (array) $tags ) ) );
+		}
+
+		return $merged;
+	}
+
+	/**
+	 * Resolve text repeater items.
+	 *
+	 * @param array  $stored   Saved meta.
+	 * @param array  $defaults Defaults.
+	 * @param string $key      Field key.
+	 * @return array
+	 */
+	private function resolve_coaching_text_items( $stored, $defaults, $key ) {
+		if ( isset( $stored[ $key ] ) && is_array( $stored[ $key ] ) && ! empty( $stored[ $key ] ) ) {
+			$items = function_exists( 'anna_normalize_coaching_text_items' ) ? anna_normalize_coaching_text_items( $stored[ $key ] ) : $stored[ $key ];
+			if ( ! empty( $items ) ) {
+				return $items;
+			}
+		}
+
+		$default_items = $defaults[ $key ] ?? array();
+		return function_exists( 'anna_normalize_coaching_text_items' ) ? anna_normalize_coaching_text_items( $default_items ) : $default_items;
+	}
+
+	/**
+	 * Resolve info card items.
+	 *
+	 * @param array $stored   Saved meta.
+	 * @param array $defaults Defaults.
+	 * @return array
+	 */
+	private function resolve_coaching_info_cards( $stored, $defaults ) {
+		if ( isset( $stored['expect_info_cards'] ) && is_array( $stored['expect_info_cards'] ) && ! empty( $stored['expect_info_cards'] ) ) {
+			$items = function_exists( 'anna_normalize_coaching_info_cards' ) ? anna_normalize_coaching_info_cards( $stored['expect_info_cards'] ) : $stored['expect_info_cards'];
+			if ( ! empty( $items ) ) {
+				return $items;
+			}
+		}
+
+		$default_items = $defaults['expect_info_cards'] ?? array();
+		return function_exists( 'anna_normalize_coaching_info_cards' ) ? anna_normalize_coaching_info_cards( $default_items ) : $default_items;
+	}
+
+	/**
+	 * Resolve FAQ items.
+	 *
+	 * @param array $stored   Saved meta.
+	 * @param array $defaults Defaults.
+	 * @return array
+	 */
+	private function resolve_coaching_faq_items( $stored, $defaults ) {
+		if ( isset( $stored['faq_items'] ) && is_array( $stored['faq_items'] ) && ! empty( $stored['faq_items'] ) ) {
+			$items = function_exists( 'anna_normalize_coaching_faq_items' ) ? anna_normalize_coaching_faq_items( $stored['faq_items'] ) : $stored['faq_items'];
+			if ( ! empty( $items ) ) {
+				return $items;
+			}
+		}
+
+		$default_items = $defaults['faq_items'] ?? array();
+		return function_exists( 'anna_normalize_coaching_faq_items' ) ? anna_normalize_coaching_faq_items( $default_items ) : $default_items;
+	}
+
+	/**
+	 * Backfill blank Coaching page meta from defaults (one-time per page).
+	 *
+	 * @param int   $post_id Post ID.
+	 * @param array $data    Resolved content.
+	 */
+	private function maybe_backfill_coaching_page_meta( $post_id, $data ) {
+		$post_id = absint( $post_id );
+		if ( ! $post_id || ! is_array( $data ) ) {
+			return;
+		}
+
+		if ( get_post_meta( $post_id, '_anna_coaching_meta_backfilled_v1', true ) ) {
+			return;
+		}
+
+		$stored  = get_post_meta( $post_id, '_anna_content_coaching_page', true );
+		$stored  = is_array( $stored ) ? $stored : array();
+		$changed = false;
+
+		foreach ( $data as $key => $value ) {
+			if ( in_array( $key, array( 'work_topics_items', 'work_gains_items', 'expect_info_cards', 'faq_items' ), true ) ) {
+				continue;
+			}
+
+			if ( ! array_key_exists( $key, $stored ) || $this->is_blank_section_value( $stored[ $key ], $key ) ) {
+				if ( ! $this->is_blank_section_value( $value, $key ) ) {
+					$stored[ $key ] = $value;
+					$changed        = true;
+				}
+			}
+		}
+
+		$repeater_keys = array( 'work_topics_items', 'work_gains_items', 'expect_info_cards', 'faq_items' );
+		foreach ( $repeater_keys as $repeater_key ) {
+			$has_items = false;
+			if ( isset( $stored[ $repeater_key ] ) && is_array( $stored[ $repeater_key ] ) ) {
+				$has_items = ! empty( $stored[ $repeater_key ] );
+			}
+			if ( ! $has_items && ! empty( $data[ $repeater_key ] ) ) {
+				$stored[ $repeater_key ] = $data[ $repeater_key ];
+				$changed                 = true;
+			}
+		}
+
+		if ( $changed ) {
+			update_post_meta( $post_id, '_anna_content_coaching_page', $stored );
+		}
+
+		update_post_meta( $post_id, '_anna_coaching_meta_backfilled_v1', 1 );
+	}
+
+	/**
+	 * Sanitize Coaching page content.
+	 *
+	 * @param array $input Raw input.
+	 * @return array
+	 */
+	private function sanitize_coaching_page_content( $input ) {
+		$data = array(
+			'hero_eyebrow'         => sanitize_text_field( $input['hero_eyebrow'] ?? '' ),
+			'hero_heading'         => sanitize_textarea_field( $input['hero_heading'] ?? '' ),
+			'hero_description'     => sanitize_textarea_field( $input['hero_description'] ?? '' ),
+			'hero_image_id'        => absint( $input['hero_image_id'] ?? 0 ),
+			'hero_button_text'     => sanitize_text_field( $input['hero_button_text'] ?? '' ),
+			'hero_button_url'      => esc_url_raw( $input['hero_button_url'] ?? '' ),
+			'work_eyebrow'         => sanitize_text_field( $input['work_eyebrow'] ?? '' ),
+			'work_heading'         => sanitize_text_field( $input['work_heading'] ?? '' ),
+			'work_gains_heading'   => sanitize_text_field( $input['work_gains_heading'] ?? '' ),
+			'expect_eyebrow'       => sanitize_text_field( $input['expect_eyebrow'] ?? '' ),
+			'expect_heading_line1' => sanitize_text_field( $input['expect_heading_line1'] ?? '' ),
+			'expect_heading_line2' => sanitize_text_field( $input['expect_heading_line2'] ?? '' ),
+			'expect_body'          => sanitize_textarea_field( $input['expect_body'] ?? '' ),
+			'expect_quote'         => sanitize_textarea_field( $input['expect_quote'] ?? '' ),
+			'expect_button_text'   => sanitize_text_field( $input['expect_button_text'] ?? '' ),
+			'expect_button_url'    => esc_url_raw( $input['expect_button_url'] ?? '' ),
+			'faq_heading'          => sanitize_text_field( $input['faq_heading'] ?? '' ),
+		);
+
+		if ( ! empty( $input['hero_tags'] ) ) {
+			$tags = preg_split( '/\r\n|\r|\n/', sanitize_textarea_field( $input['hero_tags'] ) );
+			$data['hero_tags'] = array_values( array_filter( array_map( 'trim', (array) $tags ) ) );
+		} else {
+			$data['hero_tags'] = array();
+		}
+
+		$data['work_topics_items'] = function_exists( 'anna_normalize_coaching_text_items' )
+			? anna_normalize_coaching_text_items( $input['work_topics_items'] ?? array() )
+			: array();
+		$data['work_gains_items'] = function_exists( 'anna_normalize_coaching_text_items' )
+			? anna_normalize_coaching_text_items( $input['work_gains_items'] ?? array() )
+			: array();
+		$data['expect_info_cards'] = function_exists( 'anna_normalize_coaching_info_cards' )
+			? anna_normalize_coaching_info_cards( $input['expect_info_cards'] ?? array() )
+			: array();
+		$data['faq_items'] = function_exists( 'anna_normalize_coaching_faq_items' )
+			? anna_normalize_coaching_faq_items( $input['faq_items'] ?? array() )
+			: array();
+
+		$defaults = $this->get_coaching_page_defaults();
+		$merged   = wp_parse_args( $data, $defaults );
+
+		foreach ( array( 'work_topics_items', 'work_gains_items', 'expect_info_cards', 'faq_items' ) as $repeater_key ) {
+			if ( empty( $merged[ $repeater_key ] ) ) {
+				$merged[ $repeater_key ] = $defaults[ $repeater_key ] ?? array();
+			}
+		}
+
+		return $merged;
+	}
+
+	/**
+	 * Map theme options to Coaching page meta keys.
+	 *
+	 * @return array<string, string>
+	 */
+	private function get_coaching_page_theme_option_map() {
+		if ( ! function_exists( 'anna_get_coaching_page_option_map' ) ) {
+			return array();
+		}
+
+		$map = anna_get_coaching_page_option_map();
+		$out = array();
+		foreach ( $map as $template_key => $option_key ) {
+			if ( in_array( $template_key, array( 'work_topics_items', 'work_gains_items', 'expect_info_cards', 'faq_items', 'hero_tags' ), true ) ) {
+				continue;
+			}
+			$out[ $template_key ] = $option_key;
+		}
+
+		return $out;
+	}
+
+	/**
+	 * Pull Coaching defaults from theme options.
+	 *
+	 * @return array
+	 */
+	private function get_theme_mapped_coaching_defaults() {
+		$theme = self::get_theme_options_with_defaults();
+		$map   = $this->get_coaching_page_theme_option_map();
+		$out   = array();
+
+		foreach ( $map as $plugin_key => $theme_key ) {
+			if ( ! isset( $theme[ $theme_key ] ) ) {
+				continue;
+			}
+
+			$value = $theme[ $theme_key ];
+			if ( str_ends_with( $plugin_key, '_image_id' ) ) {
+				$out[ $plugin_key ] = absint( $value );
+			} else {
+				$out[ $plugin_key ] = $value;
+			}
+		}
+
+		if ( ! empty( $theme['coaching_pg_hero_tags_text'] ) ) {
+			$tags = preg_split( '/\r\n|\r|\n/', (string) $theme['coaching_pg_hero_tags_text'] );
+			$out['hero_tags'] = array_values( array_filter( array_map( 'trim', (array) $tags ) ) );
+		}
+
+		if ( function_exists( 'anna_get_coaching_repeater_from_options' ) ) {
+			$out['work_topics_items'] = anna_get_coaching_repeater_from_options( 'coaching_pg_work_topics_items' );
+			$out['work_gains_items']  = anna_get_coaching_repeater_from_options( 'coaching_pg_work_gains_items' );
+			$out['expect_info_cards'] = anna_get_coaching_repeater_from_options( 'coaching_pg_expect_info_cards' );
+			$out['faq_items']         = anna_get_coaching_repeater_from_options( 'coaching_pg_faq_items' );
+		}
+
+		return $out;
+	}
+
+	/**
+	 * Default Coaching page content.
+	 *
+	 * @return array
+	 */
+	private function get_coaching_page_defaults() {
+		$defaults = array(
+			'hero_eyebrow'         => __( 'Coaching with Anna', 'anna-baylis' ),
+			'hero_heading'         => __( "One-to-one coaching\nfor lasting change.", 'anna-baylis' ),
+			'hero_description'     => __( 'A trauma-informed, whole-person approach that works through the body and subconscious — not just talk.', 'anna-baylis' ),
+			'hero_tags'            => array( __( 'Trauma-Informed', 'anna-baylis' ), __( 'IFS Trained', 'anna-baylis' ) ),
+			'hero_image_id'        => 0,
+			'hero_button_text'     => __( 'Book a Discovery Call', 'anna-baylis' ),
+			'hero_button_url'      => '#contact',
+			'work_eyebrow'         => __( 'What We Work On', 'anna-baylis' ),
+			'work_heading'         => __( 'In our sessions together we explore.', 'anna-baylis' ),
+			'work_gains_heading'   => __( 'What clients gain', 'anna-baylis' ),
+			'work_topics_items'    => array(),
+			'work_gains_items'     => array(),
+			'expect_eyebrow'       => '',
+			'expect_heading_line1' => __( 'What to expect', 'anna-baylis' ),
+			'expect_heading_line2' => __( 'when we work together.', 'anna-baylis' ),
+			'expect_body'          => '',
+			'expect_quote'         => '',
+			'expect_button_text'   => __( 'Book a Discovery Call', 'anna-baylis' ),
+			'expect_button_url'    => '#contact',
+			'expect_info_cards'    => array(),
+			'faq_heading'          => __( 'Everything you need to know.', 'anna-baylis' ),
+			'faq_items'            => array(),
+		);
+
+		$theme_defaults = $this->get_theme_mapped_coaching_defaults();
+		if ( ! empty( $theme_defaults ) ) {
+			$defaults = wp_parse_args( $theme_defaults, $defaults );
+		}
+
+		return $defaults;
+	}
+
 }
 
 /**
@@ -1491,4 +1983,14 @@ function anna_content_get_page_section( $post_id, $section ) {
  */
 function anna_content_get_about_page_content( $post_id ) {
 	return Anna_Content_Manager::instance()->get_about_page_content( $post_id );
+}
+
+/**
+ * Public helper for the fixed Coaching page template.
+ *
+ * @param int $post_id Post ID.
+ * @return array
+ */
+function anna_content_get_coaching_page_content( $post_id ) {
+	return Anna_Content_Manager::instance()->get_coaching_page_content( $post_id );
 }
