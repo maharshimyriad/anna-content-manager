@@ -49,7 +49,7 @@ trait Anna_Oasis_Page_Content {
 
 		<h3><?php esc_html_e( 'Hero', 'anna-baylis' ); ?></h3>
 		<table class="form-table">
-			<?php $this->render_text_field( $prefix, 'hero_eyebrow', __( 'Eyebrow', 'anna-baylis' ), $data['hero_eyebrow'] ); ?>
+			<?php $this->render_text_field( $prefix, 'hero_breadcrumb', __( 'Breadcrumb', 'anna-baylis' ), $data['hero_breadcrumb'] ?? '' ); ?>
 			<?php $this->render_text_field( $prefix, 'hero_heading', __( 'Title', 'anna-baylis' ), $data['hero_heading'] ); ?>
 			<?php $this->render_text_field( $prefix, 'hero_subheading', __( 'Subheading', 'anna-baylis' ), $data['hero_subheading'] ); ?>
 			<?php $this->render_textarea_field( $prefix, 'hero_body', __( 'Body', 'anna-baylis' ), $data['hero_body'], 8 ); ?>
@@ -63,7 +63,8 @@ trait Anna_Oasis_Page_Content {
 			<?php $this->render_text_field( $prefix, 'what_eyebrow', __( 'Eyebrow', 'anna-baylis' ), $data['what_eyebrow'] ); ?>
 			<?php $this->render_text_field( $prefix, 'what_heading', __( 'Heading', 'anna-baylis' ), $data['what_heading'] ); ?>
 			<?php $this->render_textarea_field( $prefix, 'what_body', __( 'Body', 'anna-baylis' ), $data['what_body'], 5 ); ?>
-			<?php $this->render_text_field( $prefix, 'what_footer_line', __( 'Footer Line', 'anna-baylis' ), $data['what_footer_line'] ); ?>
+			<?php $this->render_text_field( $prefix, 'what_footer_line', __( 'Footer Link Text', 'anna-baylis' ), $data['what_footer_line'] ); ?>
+			<?php $this->render_text_field( $prefix, 'what_footer_url', __( 'Footer Link URL', 'anna-baylis' ), $data['what_footer_url'] ?? '' ); ?>
 		</table>
 
 		<h3><?php esc_html_e( 'Where Oasis Began', 'anna-baylis' ); ?></h3>
@@ -77,6 +78,8 @@ trait Anna_Oasis_Page_Content {
 			<?php $this->render_media_field( $prefix, 'begun_image_id', __( 'Portrait', 'anna-baylis' ), $data['begun_image_id'] ); ?>
 			<?php $this->render_text_field( $prefix, 'begun_callout_label', __( 'Callout Label', 'anna-baylis' ), $data['begun_callout_label'] ); ?>
 			<?php $this->render_textarea_field( $prefix, 'begun_callout_body', __( 'Callout Body', 'anna-baylis' ), $data['begun_callout_body'], 3 ); ?>
+			<?php $this->render_text_field( $prefix, 'begun_link_text', __( 'Story Link Text', 'anna-baylis' ), $data['begun_link_text'] ?? '' ); ?>
+			<?php $this->render_text_field( $prefix, 'begun_link_url', __( 'Story Link URL', 'anna-baylis' ), $data['begun_link_url'] ?? '' ); ?>
 		</table>
 
 		<h3><?php esc_html_e( 'Inside Oasis', 'anna-baylis' ); ?></h3>
@@ -114,6 +117,53 @@ trait Anna_Oasis_Page_Content {
 			<?php $this->render_text_field( $prefix, 'ready_heading', __( 'Heading', 'anna-baylis' ), $data['ready_heading'] ); ?>
 			<?php $this->render_oasis_text_repeater_field( 'ready_items', $data['ready_items'] ?? array(), __( 'Cards', 'anna-baylis' ) ); ?>
 		</table>
+
+		<h3><?php esc_html_e( 'Waitlist', 'anna-baylis' ); ?></h3>
+		<table class="form-table">
+			<?php $this->render_text_field( $prefix, 'waitlist_eyebrow', __( 'Eyebrow', 'anna-baylis' ), $data['waitlist_eyebrow'] ?? '' ); ?>
+			<?php $this->render_textarea_field( $prefix, 'waitlist_heading', __( 'Heading', 'anna-baylis' ), $data['waitlist_heading'] ?? '', 3 ); ?>
+			<?php $this->render_text_field( $prefix, 'waitlist_button_text', __( 'Button Text', 'anna-baylis' ), $data['waitlist_button_text'] ?? '' ); ?>
+			<?php $this->render_text_field( $prefix, 'waitlist_button_url', __( 'Button URL', 'anna-baylis' ), $data['waitlist_button_url'] ?? '' ); ?>
+		</table>
+
+		<h3><?php esc_html_e( 'FAQ', 'anna-baylis' ); ?></h3>
+		<table class="form-table">
+			<?php $this->render_text_field( $prefix, 'faq_heading', __( 'Section Heading', 'anna-baylis' ), $data['faq_heading'] ?? '' ); ?>
+			<?php $this->render_oasis_faq_repeater_field( $data['faq_items'] ?? array() ); ?>
+		</table>
+		<?php
+	}
+
+	/**
+	 * @param array $items FAQ rows.
+	 */
+	private function render_oasis_faq_repeater_field( $items ) {
+		$items = function_exists( 'anna_normalize_coaching_faq_items' ) ? anna_normalize_coaching_faq_items( $items ) : (array) $items;
+		?>
+		<tr>
+			<th scope="row"><?php esc_html_e( 'FAQ Items', 'anna-baylis' ); ?></th>
+			<td>
+				<div class="anna-content-repeater" data-anna-content-repeater="oasis-faq">
+					<div class="anna-content-repeater__rows" data-anna-content-repeater-rows="true">
+						<?php foreach ( $items as $index => $item ) : ?>
+							<div class="anna-content-repeater__row" data-anna-content-repeater-row="true">
+								<p><input type="text" class="large-text" name="anna_content_oasis_page[faq_items][<?php echo esc_attr( $index ); ?>][question]" value="<?php echo esc_attr( $item['question'] ?? '' ); ?>"></p>
+								<p><textarea class="large-text" rows="3" name="anna_content_oasis_page[faq_items][<?php echo esc_attr( $index ); ?>][answer]"><?php echo esc_textarea( $item['answer'] ?? '' ); ?></textarea></p>
+								<p><button type="button" class="button-link-delete" data-anna-content-repeater-remove="true"><?php esc_html_e( 'Remove', 'anna-baylis' ); ?></button></p><hr>
+							</div>
+						<?php endforeach; ?>
+					</div>
+					<button type="button" class="button" data-anna-content-repeater-add="true"><?php esc_html_e( 'Add FAQ', 'anna-baylis' ); ?></button>
+					<template data-anna-content-repeater-template="true">
+						<div class="anna-content-repeater__row" data-anna-content-repeater-row="true">
+							<p><input type="text" class="large-text" name="anna_content_oasis_page[faq_items][__INDEX__][question]" value=""></p>
+							<p><textarea class="large-text" rows="3" name="anna_content_oasis_page[faq_items][__INDEX__][answer]"></textarea></p>
+							<p><button type="button" class="button-link-delete" data-anna-content-repeater-remove="true"><?php esc_html_e( 'Remove', 'anna-baylis' ); ?></button></p><hr>
+						</div>
+					</template>
+				</div>
+			</td>
+		</tr>
 		<?php
 	}
 
@@ -291,7 +341,7 @@ trait Anna_Oasis_Page_Content {
 		$defaults = $this->get_oasis_page_defaults();
 		$merged   = wp_parse_args( $stored, $defaults );
 
-		$repeaters = array( 'inside_pill_items', 'inside_schedule_items', 'how_card_items', 'choose_plan_items', 'ready_items' );
+		$repeaters = array( 'inside_pill_items', 'inside_schedule_items', 'how_card_items', 'choose_plan_items', 'ready_items', 'faq_items' );
 		foreach ( $defaults as $key => $default_value ) {
 			if ( in_array( $key, $repeaters, true ) ) {
 				continue;
@@ -308,6 +358,7 @@ trait Anna_Oasis_Page_Content {
 		$merged['how_card_items']        = $this->resolve_oasis_how_cards( $stored, $defaults );
 		$merged['choose_plan_items']     = $this->resolve_oasis_plan_items( $stored, $defaults );
 		$merged['ready_items']           = $this->resolve_oasis_text_items( $stored, $defaults, 'ready_items' );
+		$merged['faq_items']             = $this->resolve_oasis_faq_items( $stored, $defaults );
 
 		return $merged;
 	}
@@ -369,6 +420,18 @@ trait Anna_Oasis_Page_Content {
 	 * @param array $defaults Defaults.
 	 * @return array
 	 */
+	private function resolve_oasis_faq_items( $stored, $defaults ) {
+		if ( isset( $stored['faq_items'] ) && is_array( $stored['faq_items'] ) && ! empty( $stored['faq_items'] ) ) {
+			$items = function_exists( 'anna_normalize_coaching_faq_items' ) ? anna_normalize_coaching_faq_items( $stored['faq_items'] ) : $stored['faq_items'];
+			if ( ! empty( $items ) ) {
+				return $items;
+			}
+		}
+
+		$default_items = $defaults['faq_items'] ?? array();
+		return function_exists( 'anna_normalize_coaching_faq_items' ) ? anna_normalize_coaching_faq_items( $default_items ) : $default_items;
+	}
+
 	private function resolve_oasis_plan_items( $stored, $defaults ) {
 		if ( isset( $stored['choose_plan_items'] ) && is_array( $stored['choose_plan_items'] ) && ! empty( $stored['choose_plan_items'] ) ) {
 			$items = function_exists( 'anna_normalize_oasis_plan_items' ) ? anna_normalize_oasis_plan_items( $stored['choose_plan_items'] ) : $stored['choose_plan_items'];
@@ -399,7 +462,7 @@ trait Anna_Oasis_Page_Content {
 		$stored  = is_array( $stored ) ? $stored : array();
 		$changed = false;
 
-		$repeaters = array( 'inside_pill_items', 'inside_schedule_items', 'how_card_items', 'choose_plan_items', 'ready_items' );
+		$repeaters = array( 'inside_pill_items', 'inside_schedule_items', 'how_card_items', 'choose_plan_items', 'ready_items', 'faq_items' );
 
 		foreach ( $data as $key => $value ) {
 			if ( in_array( $key, $repeaters, true ) ) {
@@ -469,6 +532,15 @@ trait Anna_Oasis_Page_Content {
 			'choose_footer'       => sanitize_textarea_field( $input['choose_footer'] ?? '' ),
 			'ready_eyebrow'       => sanitize_text_field( $input['ready_eyebrow'] ?? '' ),
 			'ready_heading'       => sanitize_text_field( $input['ready_heading'] ?? '' ),
+			'hero_breadcrumb'     => sanitize_text_field( $input['hero_breadcrumb'] ?? '' ),
+			'what_footer_url'     => esc_url_raw( $input['what_footer_url'] ?? '' ),
+			'begun_link_text'     => sanitize_text_field( $input['begun_link_text'] ?? '' ),
+			'begun_link_url'      => esc_url_raw( $input['begun_link_url'] ?? '' ),
+			'waitlist_eyebrow'    => sanitize_text_field( $input['waitlist_eyebrow'] ?? '' ),
+			'waitlist_heading'    => sanitize_textarea_field( $input['waitlist_heading'] ?? '' ),
+			'waitlist_button_text'=> sanitize_text_field( $input['waitlist_button_text'] ?? '' ),
+			'waitlist_button_url' => esc_url_raw( $input['waitlist_button_url'] ?? '' ),
+			'faq_heading'         => sanitize_text_field( $input['faq_heading'] ?? '' ),
 		);
 
 		$data['inside_pill_items']     = function_exists( 'anna_normalize_oasis_text_items' ) ? anna_normalize_oasis_text_items( $input['inside_pill_items'] ?? array() ) : array();
@@ -476,11 +548,12 @@ trait Anna_Oasis_Page_Content {
 		$data['how_card_items']        = function_exists( 'anna_normalize_oasis_how_cards' ) ? anna_normalize_oasis_how_cards( $input['how_card_items'] ?? array() ) : array();
 		$data['choose_plan_items']     = function_exists( 'anna_normalize_oasis_plan_items' ) ? anna_normalize_oasis_plan_items( $input['choose_plan_items'] ?? array() ) : array();
 		$data['ready_items']           = function_exists( 'anna_normalize_oasis_text_items' ) ? anna_normalize_oasis_text_items( $input['ready_items'] ?? array() ) : array();
+		$data['faq_items']             = function_exists( 'anna_normalize_coaching_faq_items' ) ? anna_normalize_coaching_faq_items( $input['faq_items'] ?? array() ) : array();
 
 		$defaults = $this->get_oasis_page_defaults();
 		$merged   = wp_parse_args( $data, $defaults );
 
-		foreach ( array( 'inside_pill_items', 'inside_schedule_items', 'how_card_items', 'choose_plan_items', 'ready_items' ) as $repeater_key ) {
+		foreach ( array( 'inside_pill_items', 'inside_schedule_items', 'how_card_items', 'choose_plan_items', 'ready_items', 'faq_items' ) as $repeater_key ) {
 			if ( empty( $merged[ $repeater_key ] ) ) {
 				$merged[ $repeater_key ] = $defaults[ $repeater_key ] ?? array();
 			}
@@ -502,7 +575,7 @@ trait Anna_Oasis_Page_Content {
 		$out   = array();
 
 		foreach ( $map as $plugin_key => $theme_key ) {
-			if ( in_array( $plugin_key, array( 'inside_pill_items', 'inside_schedule_items', 'how_card_items', 'choose_plan_items', 'ready_items' ), true ) ) {
+			if ( in_array( $plugin_key, array( 'inside_pill_items', 'inside_schedule_items', 'how_card_items', 'choose_plan_items', 'ready_items', 'faq_items' ), true ) ) {
 				continue;
 			}
 			if ( ! isset( $theme[ $theme_key ] ) ) {
@@ -522,6 +595,7 @@ trait Anna_Oasis_Page_Content {
 			$out['how_card_items']        = anna_get_oasis_repeater_from_options( 'how_card_items' );
 			$out['choose_plan_items']     = anna_get_oasis_repeater_from_options( 'choose_plan_items' );
 			$out['ready_items']           = anna_get_oasis_repeater_from_options( 'ready_items' );
+			$out['faq_items']             = anna_get_oasis_repeater_from_options( 'faq_items' );
 		}
 
 		return $out;
