@@ -12,6 +12,7 @@ final class Anna_Content_Manager {
 	use Anna_Speaking_Page_Content;
 	use Anna_Mhs_Page_Content;
 	use Anna_Move_Page_Content;
+	use Anna_Scaffolded_Page_Content;
 	/**
 	 * Singleton instance.
 	 *
@@ -181,6 +182,7 @@ final class Anna_Content_Manager {
 			$this->register_speaking_page_meta_box( $post );
 			$this->register_mhs_page_meta_box( $post );
 			$this->register_move_page_meta_box( $post );
+			$this->register_scaffolded_page_meta_boxes( $post );
 		}
 
 		if ( ! $is_front_page ) {
@@ -763,6 +765,7 @@ final class Anna_Content_Manager {
 		$this->save_speaking_page_content( $post_id );
 		$this->save_mhs_page_content( $post_id );
 		$this->save_move_page_content( $post_id );
+		$this->save_scaffolded_page_content( $post_id );
 
 		if ( isset( $_POST['anna_content_hero'] ) && is_array( $_POST['anna_content_hero'] ) ) {
 			$hero = wp_unslash( $_POST['anna_content_hero'] );
@@ -2143,4 +2146,15 @@ function anna_content_get_mhs_page_content( $post_id ) {
  */
 function anna_content_get_move_page_content( $post_id ) {
 	return Anna_Content_Manager::instance()->get_move_page_content( $post_id );
+}
+
+/**
+ * Public helper for scaffolded theme pages (Anna Page Scaffolder).
+ *
+ * @param int    $post_id Post ID.
+ * @param string $code    Page code prefix (e.g. contact).
+ * @return array<string, mixed>
+ */
+function anna_content_get_scaffold_page_content( $post_id, $code ) {
+	return Anna_Content_Manager::instance()->get_scaffold_page_content( $post_id, $code );
 }

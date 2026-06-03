@@ -78,6 +78,17 @@ or build a page template with multiple section includes in the order you want.
 - Fill the section meta boxes
 - Assign the correct page template if the theme provides one
 
+## Scaffolded pages (Anna Page Scaffolder)
+
+When you generate a page with **Anna Page Scaffolder** (e.g. slug `contact`), **Anna Content Manager** automatically handles the page editor — no new trait file per page.
+
+- Trait: `includes/trait-anna-scaffolded-page-content.php`
+- Meta key: `_anna_content_{code}_page` (e.g. `_anna_content_contact_page`)
+- Form group: `anna_content_{code}_page`
+- Public API: `anna_content_get_scaffold_page_content( $post_id, 'contact' )` or `anna_content_get_contact_page_content( $post_id )` (generated in theme helpers)
+
+The scaffolder plugin only generates theme files; this plugin owns per-page editor content, matching Oasis / Speaking / MHS / MOVE.
+
 ## Architecture rule
 
 - Plugin owns content fields and content storage
