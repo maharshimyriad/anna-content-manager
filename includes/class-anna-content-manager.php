@@ -10,6 +10,8 @@ if ( ! defined( 'ABSPATH' ) ) {
 final class Anna_Content_Manager {
 	use Anna_Oasis_Page_Content;
 	use Anna_Speaking_Page_Content;
+	use Anna_Mhs_Page_Content;
+	use Anna_Move_Page_Content;
 	/**
 	 * Singleton instance.
 	 *
@@ -177,6 +179,8 @@ final class Anna_Content_Manager {
 		if ( $is_page ) {
 			$this->register_oasis_page_meta_box( $post );
 			$this->register_speaking_page_meta_box( $post );
+			$this->register_mhs_page_meta_box( $post );
+			$this->register_move_page_meta_box( $post );
 		}
 
 		if ( ! $is_front_page ) {
@@ -757,6 +761,8 @@ final class Anna_Content_Manager {
 
 		$this->save_oasis_page_content( $post_id );
 		$this->save_speaking_page_content( $post_id );
+		$this->save_mhs_page_content( $post_id );
+		$this->save_move_page_content( $post_id );
 
 		if ( isset( $_POST['anna_content_hero'] ) && is_array( $_POST['anna_content_hero'] ) ) {
 			$hero = wp_unslash( $_POST['anna_content_hero'] );
@@ -2117,4 +2123,24 @@ function anna_content_get_oasis_page_content( $post_id ) {
  */
 function anna_content_get_speaking_page_content( $post_id ) {
 	return Anna_Content_Manager::instance()->get_speaking_page_content( $post_id );
+}
+
+/**
+ * Public helper for the Mental Health Support page template.
+ *
+ * @param int $post_id Post ID.
+ * @return array
+ */
+function anna_content_get_mhs_page_content( $post_id ) {
+	return Anna_Content_Manager::instance()->get_mhs_page_content( $post_id );
+}
+
+/**
+ * Public helper for the MOVE page template.
+ *
+ * @param int $post_id Post ID.
+ * @return array
+ */
+function anna_content_get_move_page_content( $post_id ) {
+	return Anna_Content_Manager::instance()->get_move_page_content( $post_id );
 }
