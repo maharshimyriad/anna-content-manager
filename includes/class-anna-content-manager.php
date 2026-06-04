@@ -236,6 +236,17 @@ final class Anna_Content_Manager {
 			file_exists( $js_path ) ? (string) filemtime( $js_path ) : ANNA_CONTENT_MANAGER_VERSION,
 			true
 		);
+
+		$layout_js = ANNA_CONTENT_MANAGER_DIR . 'assets/js/section-layout.js';
+		if ( file_exists( $layout_js ) ) {
+			wp_enqueue_script(
+				'anna-content-section-layout',
+				ANNA_CONTENT_MANAGER_URL . 'assets/js/section-layout.js',
+				array( 'jquery', 'anna-content-manager-admin' ),
+				(string) filemtime( $layout_js ),
+				true
+			);
+		}
 	}
 
 	/**
