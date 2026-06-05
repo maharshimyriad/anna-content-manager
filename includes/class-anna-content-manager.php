@@ -13,6 +13,9 @@ final class Anna_Content_Manager {
 	use Anna_Mhs_Page_Content;
 	use Anna_Move_Page_Content;
 	use Anna_Scaffolded_Page_Content;
+	use Anna_Contact_Page_Content;
+	use Anna_Reviews_Page_Content;
+	use Anna_Blog_Page_Content;
 	/**
 	 * Singleton instance.
 	 *
@@ -183,6 +186,9 @@ final class Anna_Content_Manager {
 			$this->register_mhs_page_meta_box( $post );
 			$this->register_move_page_meta_box( $post );
 			$this->register_scaffolded_page_meta_boxes( $post );
+			$this->register_contact_page_meta_box( $post );
+			$this->register_reviews_page_meta_box( $post );
+			$this->register_blog_page_meta_box( $post );
 		}
 
 		if ( ! $is_front_page ) {
@@ -783,6 +789,9 @@ final class Anna_Content_Manager {
 		$this->save_mhs_page_content( $post_id );
 		$this->save_move_page_content( $post_id );
 		$this->save_scaffolded_page_content( $post_id );
+		$this->save_contact_page_content( $post_id );
+		$this->save_reviews_page_content( $post_id );
+		$this->save_blog_page_content( $post_id );
 
 		if ( isset( $_POST['anna_content_hero'] ) && is_array( $_POST['anna_content_hero'] ) ) {
 			$hero = wp_unslash( $_POST['anna_content_hero'] );

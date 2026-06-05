@@ -20,6 +20,9 @@ require_once ANNA_CONTENT_MANAGER_DIR . 'includes/trait-anna-speaking-page-conte
 require_once ANNA_CONTENT_MANAGER_DIR . 'includes/trait-anna-mhs-page-content.php';
 require_once ANNA_CONTENT_MANAGER_DIR . 'includes/trait-anna-move-page-content.php';
 require_once ANNA_CONTENT_MANAGER_DIR . 'includes/trait-anna-scaffolded-page-content.php';
+require_once ANNA_CONTENT_MANAGER_DIR . 'includes/trait-anna-contact-page-content.php';
+require_once ANNA_CONTENT_MANAGER_DIR . 'includes/trait-anna-reviews-page-content.php';
+require_once ANNA_CONTENT_MANAGER_DIR . 'includes/trait-anna-blog-page-content.php';
 require_once ANNA_CONTENT_MANAGER_DIR . 'includes/class-anna-content-manager.php';
 
 Anna_Content_Manager::instance();
