@@ -262,6 +262,9 @@ final class Anna_Content_Manager {
 		$image_url = ! empty( $data['image_id'] ) ? wp_get_attachment_image_url( absint( $data['image_id'] ), 'medium' ) : '';
 		?>
 		<p><?php esc_html_e( 'Use this panel to manage hero content for this page without touching the theme layout. The homepage hero reads these values first.', 'anna-baylis' ); ?></p>
+		<p class="description" style="padding:0.6rem 0.9rem;background:#f0f6fc;border-left:3px solid #72aee6;border-radius:2px;font-size:12px;">
+			<?php esc_html_e( 'Tip: type', 'anna-baylis' ); ?> <code>empty--</code> <?php esc_html_e( 'in any field to hide it on the frontend and suppress the default content.', 'anna-baylis' ); ?>
+		</p>
 		<table class="form-table">
 			<tr>
 				<th scope="row"><label for="anna-content-hero-eyebrow"><?php esc_html_e( 'Eyebrow', 'anna-baylis' ); ?></label></th>
@@ -348,6 +351,9 @@ final class Anna_Content_Manager {
 		$this->maybe_backfill_about_page_meta( $post->ID, $data );
 		?>
 		<p><?php esc_html_e( 'These fields feed the fixed About page design. Admins can edit copy and images only; the section layout stays in the theme.', 'anna-baylis' ); ?></p>
+		<p class="description" style="padding:0.6rem 0.9rem;background:#f0f6fc;border-left:3px solid #72aee6;border-radius:2px;font-size:12px;">
+			<?php esc_html_e( 'Tip: type', 'anna-baylis' ); ?> <code>empty--</code> <?php esc_html_e( 'in any field to hide it on the frontend and suppress the default content.', 'anna-baylis' ); ?>
+		</p>
 
 		<h3><?php esc_html_e( 'Hero', 'anna-baylis' ); ?></h3>
 		<table class="form-table">
@@ -1529,6 +1535,9 @@ final class Anna_Content_Manager {
 		$this->maybe_backfill_coaching_page_meta( $post->ID, $data );
 		?>
 		<p><?php esc_html_e( 'These fields feed the fixed Coaching page design. Admins can edit copy and images only.', 'anna-baylis' ); ?></p>
+		<p class="description" style="padding:0.6rem 0.9rem;background:#f0f6fc;border-left:3px solid #72aee6;border-radius:2px;font-size:12px;">
+			<?php esc_html_e( 'Tip: type', 'anna-baylis' ); ?> <code>empty--</code> <?php esc_html_e( 'in any field to hide it on the frontend and suppress the default content.', 'anna-baylis' ); ?>
+		</p>
 
 		<h3><?php esc_html_e( 'Hero', 'anna-baylis' ); ?></h3>
 		<table class="form-table">
