@@ -147,6 +147,49 @@ final class Anna_Content_Manager {
 		add_action( 'add_meta_boxes_page', array( $this, 'register_meta_boxes' ) );
 		add_action( 'save_post_page', array( $this, 'save_page_content' ) );
 		add_action( 'admin_enqueue_scripts', array( $this, 'enqueue_admin_assets' ) );
+		add_action( 'admin_init', array( $this, 'hide_editor_for_managed_templates' ) );
+	}
+
+	/**
+	 * Hide the classic editor content area for pages using our custom templates.
+	 * Clients only need to use the meta boxes below — the editor is irrelevant
+	 * and confusing when a custom template is active.
+	 */
+	public function hide_editor_for_managed_templates() {
+		$managed_templates = array(
+			'page-contact.php',
+			'page-reviews.php',
+			'page-oasis.php',
+			'page-coaching.php',
+			'page-speaking.php',
+			'page-mental-health-support.php',
+			'page-move.php',
+			'page-about.php',
+		);
+
+		// Also hide for scaffolded page templates.
+		if ( function_exists( 'anna_get_scaffolded_pages' ) ) {
+			foreach ( anna_get_scaffolded_pages() as $page ) {
+				if ( ! empty( $page['template'] ) ) {
+					$managed_templates[] = $page['template'];
+				}
+			}
+		}
+
+		$screen = function_exists( 'get_current_screen' ) ? get_current_screen() : null;
+		if ( ! $screen || 'page' !== $screen->post_type ) {
+			return;
+		}
+
+		$post_id = isset( $_GET['post'] ) ? absint( $_GET['post'] ) : 0;
+		if ( ! $post_id ) {
+			return;
+		}
+
+		$template = get_page_template_slug( $post_id );
+		if ( in_array( $template, $managed_templates, true ) ) {
+			remove_post_type_support( 'page', 'editor' );
+		}
 	}
 
 	/**
