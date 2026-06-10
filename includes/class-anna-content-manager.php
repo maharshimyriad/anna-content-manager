@@ -196,9 +196,8 @@ final class Anna_Content_Manager {
 	 * Register page-level content meta boxes.
 	 */
 	public function register_meta_boxes( $post = null ) {
-		$is_page       = $post instanceof WP_Post;
-		$is_front_page = $is_page && (int) get_option( 'page_on_front' ) === (int) $post->ID;
-		$is_about_page = $is_page && ( 'about' === $post->post_name || 'page-about.php' === get_page_template_slug( $post->ID ) );
+		$is_page          = $post instanceof WP_Post;
+		$is_about_page    = $is_page && ( 'about' === $post->post_name || 'page-about.php' === get_page_template_slug( $post->ID ) );
 		$is_coaching_page = $is_page && ( 'coaching' === $post->post_name || 'page-coaching.php' === get_page_template_slug( $post->ID ) );
 
 		if ( $is_about_page ) {
@@ -234,23 +233,9 @@ final class Anna_Content_Manager {
 			$this->register_blog_page_meta_box( $post );
 		}
 
-		if ( ! $is_front_page ) {
-			return;
-		}
-
-		add_meta_box(
-			'anna_content_hero',
-			__( 'Anna Hero Section Content', 'anna-baylis' ),
-			array( $this, 'render_hero_meta_box' ),
-			'page',
-			'normal',
-			'high'
-		);
-		add_meta_box( 'anna_content_intro', __( 'Anna Intro / Recognition Content', 'anna-baylis' ), array( $this, 'render_intro_meta_box' ), 'page', 'normal', 'default' );
-		add_meta_box( 'anna_content_services', __( 'Anna Services Section Content', 'anna-baylis' ), array( $this, 'render_services_meta_box' ), 'page', 'normal', 'default' );
-		add_meta_box( 'anna_content_about', __( 'Anna About Section Content', 'anna-baylis' ), array( $this, 'render_about_meta_box' ), 'page', 'normal', 'default' );
-		add_meta_box( 'anna_content_testimonials', __( 'Anna Testimonials Section Content', 'anna-baylis' ), array( $this, 'render_testimonials_meta_box' ), 'page', 'normal', 'default' );
-		add_meta_box( 'anna_content_cta', __( 'Anna Final CTA Section Content', 'anna-baylis' ), array( $this, 'render_cta_meta_box' ), 'page', 'normal', 'default' );
+		// Home page now uses a single metabox registered by the theme (inc/home-helpers.php).
+		// The individual per-section metaboxes (hero, intro, services, about, testimonials, cta)
+		// have been removed; all home content is stored in one meta row: _anna_content_home_page.
 	}
 
 	/**
@@ -836,110 +821,9 @@ final class Anna_Content_Manager {
 		$this->save_reviews_page_content( $post_id );
 		$this->save_blog_page_content( $post_id );
 
-		if ( isset( $_POST['anna_content_hero'] ) && is_array( $_POST['anna_content_hero'] ) ) {
-			$hero = wp_unslash( $_POST['anna_content_hero'] );
-			$data = array(
-				'eyebrow'               => sanitize_text_field( $hero['eyebrow'] ?? '' ),
-				'heading'               => sanitize_textarea_field( $hero['heading'] ?? '' ),
-				'description'           => sanitize_textarea_field( $hero['description'] ?? '' ),
-				'trust_text'            => sanitize_text_field( $hero['trust_text'] ?? '' ),
-				'image_id'              => absint( $hero['image_id'] ?? 0 ),
-				'primary_button_text'   => sanitize_text_field( $hero['primary_button_text'] ?? '' ),
-				'primary_button_url'    => esc_url_raw( $hero['primary_button_url'] ?? '' ),
-				'secondary_button_text' => sanitize_text_field( $hero['secondary_button_text'] ?? '' ),
-				'secondary_button_url'  => esc_url_raw( $hero['secondary_button_url'] ?? '' ),
-				'stat_1_value'          => sanitize_text_field( $hero['stat_1_value'] ?? '' ),
-				'stat_1_label'          => sanitize_text_field( $hero['stat_1_label'] ?? '' ),
-				'stat_2_value'          => sanitize_text_field( $hero['stat_2_value'] ?? '' ),
-				'stat_2_label'          => sanitize_text_field( $hero['stat_2_label'] ?? '' ),
-				'stat_3_value'          => sanitize_text_field( $hero['stat_3_value'] ?? '' ),
-				'stat_3_label'          => sanitize_text_field( $hero['stat_3_label'] ?? '' ),
-			);
-
-			update_post_meta( $post_id, '_anna_content_hero', $data );
-		}
-		if ( isset( $_POST['anna_content_intro'] ) && is_array( $_POST['anna_content_intro'] ) ) {
-			$input = wp_unslash( $_POST['anna_content_intro'] );
-			update_post_meta(
-				$post_id,
-				'_anna_content_intro',
-				array(
-					'intro_eyebrow'           => sanitize_text_field( $input['intro_eyebrow'] ?? '' ),
-					'intro_heading'           => sanitize_textarea_field( $input['intro_heading'] ?? '' ),
-					'intro_body'              => wp_kses_post( $input['intro_body'] ?? '' ),
-					'intro_quote'             => sanitize_textarea_field( $input['intro_quote'] ?? '' ),
-					'intro_quote_cite'        => sanitize_text_field( $input['intro_quote_cite'] ?? '' ),
-					'recognition_eyebrow'     => sanitize_text_field( $input['recognition_eyebrow'] ?? '' ),
-					'recognition_heading'     => sanitize_text_field( $input['recognition_heading'] ?? '' ),
-					'recognition_description' => sanitize_textarea_field( $input['recognition_description'] ?? '' ),
-					'recognition_items_text'  => sanitize_textarea_field( $input['recognition_items_text'] ?? '' ),
-				)
-			);
-		}
-		if ( isset( $_POST['anna_content_services'] ) && is_array( $_POST['anna_content_services'] ) ) {
-			$input = wp_unslash( $_POST['anna_content_services'] );
-			update_post_meta(
-				$post_id,
-				'_anna_content_services',
-				array(
-					'eyebrow'     => sanitize_text_field( $input['eyebrow'] ?? '' ),
-					'heading'     => sanitize_text_field( $input['heading'] ?? '' ),
-					'description' => sanitize_textarea_field( $input['description'] ?? '' ),
-					'cta_text'    => sanitize_text_field( $input['cta_text'] ?? '' ),
-					'cta_url'     => esc_url_raw( $input['cta_url'] ?? '' ),
-				)
-			);
-		}
-		if ( isset( $_POST['anna_content_about'] ) && is_array( $_POST['anna_content_about'] ) ) {
-			$input = wp_unslash( $_POST['anna_content_about'] );
-			update_post_meta(
-				$post_id,
-				'_anna_content_about',
-				array(
-					'eyebrow'        => sanitize_text_field( $input['eyebrow'] ?? '' ),
-					'heading'        => sanitize_textarea_field( $input['heading'] ?? '' ),
-					'body'           => wp_kses_post( $input['body'] ?? '' ),
-					'quote'          => sanitize_textarea_field( $input['quote'] ?? '' ),
-					'image_id'       => absint( $input['image_id'] ?? 0 ),
-					'badge_number'   => sanitize_text_field( $input['badge_number'] ?? '' ),
-					'badge_text'     => sanitize_text_field( $input['badge_text'] ?? '' ),
-					'expertise_text' => sanitize_textarea_field( $input['expertise_text'] ?? '' ),
-					'cta_text'       => sanitize_text_field( $input['cta_text'] ?? '' ),
-					'cta_url'        => esc_url_raw( $input['cta_url'] ?? '' ),
-				)
-			);
-		}
-		if ( isset( $_POST['anna_content_testimonials'] ) && is_array( $_POST['anna_content_testimonials'] ) ) {
-			$input = wp_unslash( $_POST['anna_content_testimonials'] );
-			update_post_meta(
-				$post_id,
-				'_anna_content_testimonials',
-				array(
-					'eyebrow'  => sanitize_text_field( $input['eyebrow'] ?? '' ),
-					'heading'  => sanitize_text_field( $input['heading'] ?? '' ),
-					'summary'  => sanitize_textarea_field( $input['summary'] ?? '' ),
-					'cta_text' => sanitize_text_field( $input['cta_text'] ?? '' ),
-					'cta_url'  => esc_url_raw( $input['cta_url'] ?? '' ),
-				)
-			);
-		}
-		if ( isset( $_POST['anna_content_cta'] ) && is_array( $_POST['anna_content_cta'] ) ) {
-			$input = wp_unslash( $_POST['anna_content_cta'] );
-			update_post_meta(
-				$post_id,
-				'_anna_content_cta',
-				array(
-					'eyebrow'               => sanitize_text_field( $input['eyebrow'] ?? '' ),
-					'heading'               => sanitize_textarea_field( $input['heading'] ?? '' ),
-					'description'           => sanitize_textarea_field( $input['description'] ?? '' ),
-					'trust_text'            => sanitize_textarea_field( $input['trust_text'] ?? '' ),
-					'primary_button_text'   => sanitize_text_field( $input['primary_button_text'] ?? '' ),
-					'primary_button_url'    => esc_url_raw( $input['primary_button_url'] ?? '' ),
-					'secondary_button_text' => sanitize_text_field( $input['secondary_button_text'] ?? '' ),
-					'secondary_button_url'  => esc_url_raw( $input['secondary_button_url'] ?? '' ),
-				)
-			);
-		}
+		// Home page sections (hero, intro, services, about, testimonials, cta) are now
+		// saved by the theme's anna_save_home_page_content_meta_box() in inc/home-helpers.php.
+		// They are no longer saved here — all home content lives in one meta row: _anna_content_home_page.
 	}
 
 	/**
