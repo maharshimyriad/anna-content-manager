@@ -1376,11 +1376,24 @@ final class Anna_Content_Manager {
 				);
 			case 'services':
 				return array(
-					'eyebrow'     => $options['services_eyebrow'] ?? '',
-					'heading'     => $options['services_heading'] ?? '',
-					'description' => $options['services_description'] ?? '',
-					'cta_text'    => $options['services_cta_text'] ?? '',
-					'cta_url'     => $options['services_cta_url'] ?? '',
+					'eyebrow'        => $options['services_eyebrow'] ?? '',
+					'heading'        => $options['services_heading'] ?? '',
+					'description'    => $options['services_description'] ?? '',
+					'cta_text'       => $options['services_cta_text'] ?? '',
+					'cta_url'        => $options['services_cta_url'] ?? '',
+					'bg_image_id'    => 0,
+					'card_1_title'   => '1-1 Life Coaching',
+					'card_1_excerpt' => 'Deep, personalised work using a bottom-up approach that accesses the subconscious through the body and the nervous system. We get to the root of what is actually running underneath and change it.',
+					'card_1_link'    => 'Find out more',
+					'card_1_url'     => '',
+					'card_2_title'   => 'Oasis Community',
+					'card_2_excerpt' => 'A womens wellness community for sustainable health and wellbeing. Ongoing live guidance, daily practices, guided movement, nutrition, meditation, breathwork and community connection. A space to come back to yourself week after week.',
+					'card_2_link'    => 'Find out more',
+					'card_2_url'     => '',
+					'card_3_title'   => 'Speaking and Workshops',
+					'card_3_excerpt' => 'Keynotes and interactive sessions for conferences, corporate events and womens gatherings. Drawing on Olympic experience, deep coaching expertise and lived transformation. Topics include stress and the nervous system, building resilience, the mind-body connection and more.',
+					'card_3_link'    => 'Enquire about speaking',
+					'card_3_url'     => '',
 				);
 			case 'about':
 				return array(
