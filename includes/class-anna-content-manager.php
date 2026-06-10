@@ -1386,14 +1386,17 @@ final class Anna_Content_Manager {
 					'card_1_excerpt' => 'Deep, personalised work using a bottom-up approach that accesses the subconscious through the body and the nervous system. We get to the root of what is actually running underneath and change it.',
 					'card_1_link'    => 'Find out more',
 					'card_1_url'     => '',
+					'card_1_image_id'=> 0,
 					'card_2_title'   => 'Oasis Community',
 					'card_2_excerpt' => 'A womens wellness community for sustainable health and wellbeing. Ongoing live guidance, daily practices, guided movement, nutrition, meditation, breathwork and community connection. A space to come back to yourself week after week.',
 					'card_2_link'    => 'Find out more',
 					'card_2_url'     => '',
+					'card_2_image_id'=> 0,
 					'card_3_title'   => 'Speaking and Workshops',
 					'card_3_excerpt' => 'Keynotes and interactive sessions for conferences, corporate events and womens gatherings. Drawing on Olympic experience, deep coaching expertise and lived transformation. Topics include stress and the nervous system, building resilience, the mind-body connection and more.',
 					'card_3_link'    => 'Enquire about speaking',
 					'card_3_url'     => '',
+					'card_3_image_id'=> 0,
 				);
 			case 'about':
 				return array(
