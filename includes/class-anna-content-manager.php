@@ -1292,6 +1292,15 @@ final class Anna_Content_Manager {
 			return array();
 		}
 
+		// Home page now stores all sections in one meta row (_anna_content_home_page).
+		// Check that key first before falling back to the old per-section keys.
+		if ( function_exists( 'anna_is_home_content_page' ) && anna_is_home_content_page( $post_id ) ) {
+			$home_data = get_post_meta( $post_id, '_anna_content_home_page', true );
+			if ( is_array( $home_data ) && isset( $home_data[ $section ] ) && is_array( $home_data[ $section ] ) ) {
+				return $home_data[ $section ];
+			}
+		}
+
 		$data = get_post_meta( $post_id, '_anna_content_' . sanitize_key( $section ), true );
 		return is_array( $data ) ? $data : array();
 	}
